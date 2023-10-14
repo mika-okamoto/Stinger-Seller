@@ -3,7 +3,7 @@ import uuid
 import secrets
 import collections
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
 
 def create_app(test_config=None):
@@ -40,6 +40,7 @@ def create_app(test_config=None):
     
     @app.route('/', methods=["GET", "POST"])
     def index():
+        g.users = users
         database = db.get_db()
         if request.method == "POST": 
             keywords = request.form.get("keywords")
@@ -93,6 +94,7 @@ def create_app(test_config=None):
 
     @app.route("/items/<id>", methods=("GET", "POST"))
     def item_page(id):
+        g.users = users
         database = db.get_db()
         if request.method == "POST":
             count = database.execute("""
@@ -136,6 +138,7 @@ def create_app(test_config=None):
 
     @app.route("/sellers/<id>")
     def seller_page(id):
+        g.users = users
         database = db.get_db()
         items = database.execute("""
         SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
@@ -162,6 +165,10 @@ def create_app(test_config=None):
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
+        g.users = users
+        if "token" not in request.cookies or request.cookies["token"] not in users:
+            return redirect(url_for("login"))
+
         database = db.get_db()
         tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
         tags = [
@@ -208,10 +215,12 @@ def create_app(test_config=None):
     
     @app.route("/images/<name>")
     def get_image(name):
+        g.users = users
         return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
     @app.route("/login", methods=("GET", "POST"))
     def login():
+        g.users = users
         if "token" in request.cookies:
             resp = make_response(redirect(url_for("index")))
             resp.delete_cookie('token')
@@ -258,6 +267,7 @@ def create_app(test_config=None):
     
     @app.route("/me", methods=("GET", "POST"))
     def check_me():
+        g.users = users
         if "token" in request.cookies and request.cookies["token"] in users:
             token = request.cookies["token"]
             database = db.get_db()
