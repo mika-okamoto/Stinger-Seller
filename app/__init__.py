@@ -91,9 +91,21 @@ def create_app(test_config=None):
 
         return render_template("index.html", items=items)
 
-    @app.route("/items/<id>")
+    @app.route("/items/<id>", methods=("GET", "POST"))
     def item_page(id):
         database = db.get_db()
+        if request.method == "POST":
+            count = database.execute("""
+            SELECT COUNT(*)
+            FROM item WHERE item.id = ? AND item.seller_id = ?
+            """, (id, users[request.cookies["token"]])).fetchone()[0]
+            if count >= 1:
+                database.execute("DELETE FROM item WHERE item.id = ? AND item.seller_id = ?", (id, users[request.cookies["token"]]))
+                database.commit()
+                return redirect(url_for("index"))
+            else:
+                return redirect(request.url)
+
         item = database.execute("""
         SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
         FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?
@@ -120,7 +132,7 @@ def create_app(test_config=None):
             "image": url_for("get_image", name=item[4]),
             "tags": [tags[row[0]] for row in items_from_db]
         }
-        return render_template("item.html", id=id, item=item)
+        return render_template("item.html", id=id, item=item, current_user=users.get(request.cookies.get("token")))
 
     @app.route("/sellers/<id>")
     def seller_page(id):
