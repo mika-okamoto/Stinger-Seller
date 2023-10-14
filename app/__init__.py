@@ -182,28 +182,6 @@ def create_app(test_config=None):
 
         return render_template("login.html")
     
-    # @app.route("/search=<keywords>", methods=["GET", "POST"])
-    # def search(keywords): 
-    #     if request.method == "POST": 
-    #         keywords = request.form.get("keywords")
-    #     database = db.get_db()
-    #     filtered_items = [] 
-    #     for i in keywords.split(): 
-    #         filtered_items.append(database.execute("SELECT * FROM item WHERE name LIKE ?", (keywords.split(i),)).fetchall())
-    #     filtered_items = [
-    #         {
-    #             "id": item[0],
-    #             "name": item[1],
-    #             "seller": item[2],
-    #             "price": item[3],
-    #             "description": item[4],
-    #             "created": item[6],
-    #             "image": url_for("get_image", name=item[5])
-    #         } for item in filtered_items
-    #     ]
-    #     return render_template("index.html", keywords=keywords, items=filtered_items)
-        
-
     @app.route("/me")
     def check_me():
         token = request.cookies["token"]
