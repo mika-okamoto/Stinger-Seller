@@ -34,7 +34,7 @@ def create_app(test_config=None):
 
     # ensure the instance folder exists
     try:
-        os.makedirs(app.instance_path)
+        os.makedirs(os.path.join(app.instance_path, "images"))
     except OSError:
         pass
     
@@ -220,7 +220,7 @@ def create_app(test_config=None):
                 records = database.execute("SELECT count(*) FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
                 if records == 0:
                     flash("incorrect password")
-                    return render_template("login.html", signup=True)
+                    return render_template("login.html")
             elif display_name and description:
                 database.execute(
                     "INSERT INTO user (email, password, display_name, description) VALUES (?, ?, ?, ?)",
