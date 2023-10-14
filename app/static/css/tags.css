@@ -1,0 +1,25 @@
+.checkbox {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+  
+.checkbox-input {
+    display: none;
+}
+  
+.checkbox-text {
+    padding: 3px;
+    border-radius: 10px;
+    background-color: #aaa;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0.75px 0.75px black;
+}
+
+.checkbox-input:checked ~ .checkbox-text {
+    font-weight: bold;
+}
+  
+  

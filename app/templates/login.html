@@ -6,8 +6,9 @@
     <title>Login</title>
 </head>
 <body>
-   <h1>Login</h1>
-   <form method="post" action="" enctype="multipart/form-data">
+    {% include 'nav.html' %}
+    <h1>Login</h1>
+    <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
         <label for="email">Email</label><br>
         <input type="text" name="email"
@@ -34,6 +35,7 @@
     <div class="form-group">
         <button type="submit" class="btn btn-primary">{{ "Sign up" if signup else "Log in" }}</button>
     </div>
+    {% include 'footer.html' %}
 </form>
 </body>
 </html>

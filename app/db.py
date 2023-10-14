@@ -2,6 +2,7 @@ import sqlite3
 
 import click
 from flask import current_app, g
+import csv
 
 
 def get_db():
@@ -26,7 +27,8 @@ def init_db():
 
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
-
+    
+    init_tag_table()
 
 @click.command('init-db')
 def init_db_command():
@@ -38,3 +40,10 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
 
+def init_tag_table():
+    db = get_db()
+    file = open("app/static/tags.csv")
+    contents = csv.reader(file)
+    insert_records = "INSERT INTO tag (name, background_color, text_color) VALUES(?, ?, ?)"
+    db.executemany(insert_records, contents)
+    db.commit()

@@ -99,6 +99,17 @@ def create_app(test_config=None):
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
+        database = db.get_db()
+        tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
+        print(tags)
+        tags = [
+            {
+                "id": tag[0],
+                "name": tag[1],
+                "background_color": tag[2],
+                "text_color": tag[3]
+            } for tag in tags
+        ]
         if request.method == "POST":
             errored = False
             if "token" not in request.cookies or request.cookies["token"] not in users:
@@ -127,7 +138,7 @@ def create_app(test_config=None):
                 )
                 database.commit()
                 return redirect(url_for("index"))
-        return render_template("add.html")
+        return render_template("add.html", tags=tags)
     
     @app.route("/images/<name>")
     def get_image(name):
