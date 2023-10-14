@@ -2,6 +2,7 @@ import os
 import uuid
 import secrets
 import collections
+import shutil
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
@@ -184,9 +185,6 @@ def create_app(test_config=None):
             if "token" not in request.cookies or request.cookies["token"] not in users:
                 flash("you need to be logged in", category="error")
                 errored = True
-            if "image" not in request.files or request.files["image"].filename == "":
-                flash("image needed", category="error")
-                errored = True
             if "description" not in request.form or request.form["description"] == "":
                 flash("description needed", category="error")
                 errored = True
@@ -200,7 +198,10 @@ def create_app(test_config=None):
             if not errored:
                 image_filename = str(uuid.uuid4())
                 database = db.get_db()
-                request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                if "image" not in request.files or request.files["image"].filename == "":
+                    shutil.copy("app/static/images/logo.png", os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                else:
+                    request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
                 id_row = database.execute(
                     "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
                     (request.form["name"], users[request.cookies["token"]], round(float(request.form["price"]), 2), request.form["description"], image_filename)
