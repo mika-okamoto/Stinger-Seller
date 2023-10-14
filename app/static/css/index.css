@@ -67,6 +67,7 @@
   
   .card-description {
     min-height: 20%;
+    width: 100%;
     font-size: var(--body-text);
     font-weight: 300;
     text-align: left;
