@@ -44,7 +44,7 @@
                 <hr class="card-divider">
             <div class="card-footer">
                 <div class="card-redirect"><a href="{{ url_for('item_page', id=item['id']) }}">see more...</a></div>
-                <div class="card-price">${{ item["price"] }}</div>
+                <div class="card-price">${{ "{:.2f}".format(item["price"]) }}</div>
                 <a href="{{ url_for('item_page', id=item['id']) }}"><button class="card-btn">
                     <span class="material-symbols-outlined">shopping_cart</span>
                 </button></a>
