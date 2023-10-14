@@ -41,22 +41,31 @@ def create_app(test_config=None):
     def index():
         database = db.get_db()
         if request.method == "POST": 
-            keywords = request.form.get("keywords") 
-            for i in keywords.split(): 
-                items = database.execute("SELECT id, name, seller, price, description, image_path, created FROM item WHERE name LIKE ?", ('%'+ i +'%',)).fetchall()
+            keywords = request.form.get("keywords")
+            items = []
+            seen_items = set()
+            for i in keywords.split():
+                search_results = database.execute("""
+                    SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                    FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ?
+                    """, ("%" + i + "%",)).fetchall()
+                
+                items.extend([i for i in search_results if i[0] not in seen_items])
+                seen_items |= {i[0] for i in search_results}
         else: 
             items = database.execute("""
-                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
                 FROM item JOIN user ON user.id=item.seller_id
                 """).fetchall()
             
         # make it easier to work with
-        if len(items) != 0: 
+        if len(items) != 0:
             items = [
                 {
                     "id": item[0],
                     "name": item[1],
                     "seller": item[2],
+                    "seller_id": item[7],
                     "price": item[3],
                     "description": item[4],
                     "created": item[6],
@@ -69,19 +78,24 @@ def create_app(test_config=None):
     def item_page(id):
         database = db.get_db()
         item = database.execute("""
-        SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created
+        SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
         FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?
         """, (id,)).fetchone()
         # make it easier to work with
         item = {
             "name": item[0],
             "seller": item[1],
+            "seller_id": item[6],
             "price": item[2],
             "description": item[3],
             "created": item[5],
             "image": url_for("get_image", name=item[4])
         }
         return render_template("item.html", id=id, item=item)
+
+    @app.route("/sellers/<id>")
+    def seller_page(id):
+        return "TODO"
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():

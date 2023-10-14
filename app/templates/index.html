@@ -26,7 +26,7 @@
             <div class="card">
                 <div class="card-img"><img src="{{ item['image'] }}" alt="Item photo"></div>
                 <div class="card-title">{{ item["name"] }}</div>
-                <div class="card-seller">{{ item["seller"] }}</div>
+                <div class="card-seller"><a href="{{url_for("seller_page", id=item["seller_id"])}}">{{ item["seller"] }}</a></div>
                 <div class="card-description">{{ item["description"] }} ...</div>
                 <hr class="card-divider">
             <div class="card-footer">
