@@ -18,3 +18,10 @@ python -m venv venv/
 ./venv/Scripts/activate
 pip install -r requirements.txt
 ```
+
+## How do I run this?
+
+Now, just:
+```sh
+flask --app app run --debug
+```

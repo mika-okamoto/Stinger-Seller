@@ -4,3 +4,6 @@ venv/
 
 # git
 .gitattributes
+
+# python
+__pycache__/
