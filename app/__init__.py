@@ -37,25 +37,32 @@ def create_app(test_config=None):
     except OSError:
         pass
     
-    @app.route('/')
+    @app.route('/', methods=["GET", "POST"])
     def index():
         database = db.get_db()
-        items = database.execute("""
-        SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created
-        FROM item JOIN user ON user.id=item.seller_id
-        """).fetchall()
+        if request.method == "POST": 
+            keywords = request.form.get("keywords") 
+            for i in keywords.split(): 
+                items = database.execute("SELECT id, name, seller, price, description, image_path, created FROM item WHERE name LIKE ?", ('%'+ i +'%',)).fetchall()
+        else: 
+            items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created
+                FROM item JOIN user ON user.id=item.seller_id
+                """).fetchall()
+            
         # make it easier to work with
-        items = [
-            {
-                "id": item[0],
-                "name": item[1],
-                "seller": item[2],
-                "price": item[3],
-                "description": item[4],
-                "created": item[6],
-                "image": url_for("get_image", name=item[5])
-            } for item in items
-        ]
+        if len(items) != 0: 
+            items = [
+                {
+                    "id": item[0],
+                    "name": item[1],
+                    "seller": item[2],
+                    "price": item[3],
+                    "description": item[4],
+                    "created": item[6],
+                    "image": url_for("get_image", name=item[5])
+                } for item in items
+            ]
         return render_template("index.html", items=items)
 
     @app.route("/items/<id>")
@@ -138,6 +145,28 @@ def create_app(test_config=None):
 
 
         return render_template("login.html")
+    
+    # @app.route("/search=<keywords>", methods=["GET", "POST"])
+    # def search(keywords): 
+    #     if request.method == "POST": 
+    #         keywords = request.form.get("keywords")
+    #     database = db.get_db()
+    #     filtered_items = [] 
+    #     for i in keywords.split(): 
+    #         filtered_items.append(database.execute("SELECT * FROM item WHERE name LIKE ?", (keywords.split(i),)).fetchall())
+    #     filtered_items = [
+    #         {
+    #             "id": item[0],
+    #             "name": item[1],
+    #             "seller": item[2],
+    #             "price": item[3],
+    #             "description": item[4],
+    #             "created": item[6],
+    #             "image": url_for("get_image", name=item[5])
+    #         } for item in filtered_items
+    #     ]
+    #     return render_template("index.html", keywords=keywords, items=filtered_items)
+        
 
     @app.route("/me")
     def check_me():
