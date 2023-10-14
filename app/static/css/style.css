@@ -29,3 +29,150 @@ nav ul {
 li {
   float: left;
 }
+
+/* Add a black background color to the top navigation */
+.top-bar {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  float:right;
+  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
+  bottom: 5%; 
+  margin-right: 2%;
+}
+
+/* Style the links inside the navigation bar */
+.top-bar a {
+  float: left;
+  color: #312f2f;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.top-bar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add a color to the active/current link */
+.top-bar a.active {
+  background-color: #15d80f;
+  color: white;
+}
+
+.logo-top {
+  top: 5%;
+  width: 15%; 
+  height: 15%; 
+  float: left; 
+}
+
+.bottom-bar {
+  overflow: hidden;
+  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
+  margin-bottom: 2.5%;
+}
+
+/* Style the links inside the navigation bar */
+.bottom-bar a {
+  color: #312f2f;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Change the color of links on hover */
+.bottom-bar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add a color to the active/current link */
+.bottom-bar a.active {
+  background-color: #15d80f;
+  color: white;
+}
+
+.add {
+  width: 15%; 
+  height: 15%; 
+  position:fixed; 
+  right: 2%; 
+  bottom: 5%; 
+}
+
+.add button {
+  background-color: #e6d924;
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 50%;
+}
+
+.add img {
+  width: 50%; 
+  height: 50%;
+}
+
+.add span {
+  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
+  font-size: 100%;
+  height: 100%;
+  position: absolute;
+  width: 10%;
+  right: 46%; 
+  top: 10%; 
+  transform-origin: bottom center;
+  font-weight: bold; 
+  color: rgb(0, 0, 0); 
+}
+
+.char1 { transform: rotate(-48deg); }
+.char2 { transform: rotate(-40deg); }
+.char3 { transform: rotate(-32deg); }
+.char4 { transform: rotate(-24deg); }
+.char5 { transform: rotate(-16deg); }
+.char6 { transform: rotate(-8deg); }
+.char8 { transform: rotate(8deg); }
+.char9 { transform: rotate(16deg); }
+.char10 { transform: rotate(24deg); }
+.char11 {transform: rotate(32deg)}
+.char12 { transform: rotate(40deg); }
+.char13 { transform: rotate(48deg); }
+.char14 { transform: rotate(56deg); }
+
+.checkbox {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-text {
+  padding: 4.5px;
+  border-radius: 10px;
+  background-color: #aaa;
+  color: #555;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0.75px 0.75px black;
+}
+
+.checkbox-input:checked ~ .checkbox-text {
+  font-weight: bold;
+}
+
