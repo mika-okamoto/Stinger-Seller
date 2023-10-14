@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <title>Login</title>
+</head>
+<body>
+   <h1>Login</h1>
+   <form method="post" action="" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="email">Email</label><br>
+        <input type="text" name="email"
+               placeholder="Email" class="form-control"
+               value="{{ request.form['email'] }}"></input>
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password</label><br>
+        <input type="text" name="password"
+               placeholder="Password" class="form-control"
+               value="{{ request.form['password'] }}"></input>
+    </div>
+
+    {% if signup %}
+    <div class="form-group">
+        <label for="displayname">Display name</label><br>
+        <input type="text" name="displayname"
+               placeholder="Display name" class="form-control"
+               value="{{ request.form['displayname'] }}"></input>
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+</body>
+</html>

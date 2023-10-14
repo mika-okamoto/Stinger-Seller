@@ -95,6 +95,33 @@ def create_app(test_config=None):
     def get_image(name):
         return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
+    @app.route("/login", methods=("GET", "POST"))
+    def login():
+        if request.method == "POST":
+            email = request.form["email"]
+            password = request.form["password"]
+            display_name = request.form.get("displayname")
+
+            if not email or not password:
+                return redirect(request.url)
+        
+            database = db.get_db()
+            records = database.execute("SELECT count(*) FROM user WHERE email = ?", (email,)).fetchone()[0]
+            if records >= 1:
+                records = database.execute("SELECT count(*) FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
+                if records >= 1:
+                    # logged in
+                    print("logged in")
+                else:
+                    return render_template("login.html", signup=True)
+            elif display_name:
+                database.execute("INSERT INTO user (email, password, display_name) VALUES (?, ?, ?)", (email, password, display_name))
+                database.commit()
+        
+            return render_template("login.html", signup=True)
+
+        return render_template("login.html")
+
     from . import db
     db.init_app(app)
 
