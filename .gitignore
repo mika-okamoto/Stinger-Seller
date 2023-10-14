@@ -7,3 +7,6 @@ venv/
 
 # python
 __pycache__/
+
+# flask
+instance/

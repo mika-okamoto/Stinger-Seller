@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 
 
 def create_app(test_config=None):
@@ -8,7 +8,10 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'items.sqlite'),
+        # allow up to 16MB uploads
+        MAX_CONTENT_LENGTH=16 * 1000 * 1000,
+        UPLOAD_FOLDER=os.path.join(app.instance_path, "images"),
     )
 
     if test_config is None:
@@ -36,5 +39,12 @@ def create_app(test_config=None):
     @app.route('/add-item')
     def add_item():
         return render_template("add.html")
+    
+    @app.route("/images/<name>")
+    def get_image(name):
+        return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+
+    from . import db
+    db.init_app(app)
 
     return app
