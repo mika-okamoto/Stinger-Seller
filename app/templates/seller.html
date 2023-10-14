@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <title>{{ seller['name'] }}'s Seller page - Stinger Seller</title>
+</head>
+<body>
+    {% include 'nav.html' %}
+    <h1>{{ seller['name'] }}'s Seller Page</h1>
+    <p>{{seller['description']}}</p>
+
+    {% for item in items %}
+    <p>Name: {{item["name"]}}</p>
+    <p>Price: ${{item["price"]}}</p>
+    <p>Description: {{item["description"]}}</p>
+    <img src="{{item["image"]}}">
+    {% endfor %}
+
+    {% include 'footer.html' %}
+</body>
+</html>

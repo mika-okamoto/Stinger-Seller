@@ -124,7 +124,29 @@ def create_app(test_config=None):
 
     @app.route("/sellers/<id>")
     def seller_page(id):
-        return "TODO"
+        database = db.get_db()
+        items = database.execute("""
+        SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+        FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ?""", (id,)).fetchall()
+        seller_info = database.execute("""
+        SELECT display_name, description FROM user WHERE user.id = ?""", (id,)).fetchone()
+
+        items = [{
+            "name": item[0],
+            "seller": item[1],
+            "seller_id": item[6],
+            "price": item[2],
+            "description": item[3],
+            "created": item[5],
+            "image": url_for("get_image", name=item[4])
+            } for item in items]
+
+        seller = {
+            "name": seller_info[0],
+            "description": seller_info[1]
+        }
+
+        return render_template("seller.html", id=id, items=items, seller=seller)
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
@@ -155,14 +177,14 @@ def create_app(test_config=None):
             if "price" not in request.form or request.form["price"] == "":
                 flash("price needed", category="error")
                 errored = True
-
+                
             if not errored:
                 image_filename = str(uuid.uuid4())
                 database = db.get_db()
                 request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
                 id_row = database.execute(
                     "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
-                    (request.form["name"], users[request.cookies["token"]]["id"], request.form["price"], request.form["description"], image_filename)
+                    (request.form["name"], users[request.cookies["token"]]["id"], round(float(request.form["price"]), 2), request.form["description"], image_filename)
                 ).fetchone()
                 database.executemany(
                     "INSERT INTO itemtags (item_id, tag_id) VALUES (?, ?)",
