@@ -6,6 +6,7 @@
     <title>Item page - Stinger Seller</title>
 </head>
 <body>
+    {% include 'nav.html' %}
    <h1>Item information</h1>
    <p>ID: {{id}}</p>
    <p>Name: {{item["name"]}}</p>
@@ -14,5 +15,6 @@
    <p>Description: {{item["description"]}}</p>
    <p>Created: {{item["created"]}}</p>
    <img src="{{item["image"]}}">
+   {% include 'footer.html' %}
 </body>
 </html>

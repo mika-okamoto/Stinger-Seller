@@ -6,6 +6,9 @@
     <title>Add Item</title>
 </head>
 <body>
+
+    {% include 'nav.html' %}
+
    <h1>Add Your Item</h1>
    <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
@@ -43,6 +46,8 @@
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
+
+    {% include 'footer.html' %}
 </form>
 </body>
 </html>
