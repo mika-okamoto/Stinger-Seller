@@ -1,5 +1,11 @@
 .title, .search {
-  padding: 20px;
+  margin: 20px auto;
+}
+
+.search {
+  width: 13vw;
+  display: flex;
+  flex-direction: row;
 }
 
 .catalogue {
@@ -19,7 +25,7 @@
     --main-color: #323232;
     --main-focus: #2d8cf0;
     width: 15vw;
-    height: 25vh;
+    height: 35vh;
     background: var(--bg-color);
     border: 2px solid var(--main-color);
     box-shadow: 4px 4px var(--main-color);
@@ -27,8 +33,8 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding: 20px;
-    margin: 15px;
+    padding: 10px;
+    margin: 20px;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
   
@@ -55,14 +61,12 @@
   .card-title {
     font-size: 15px;
     font-weight: 500;
-    margin-top: 10px;
     color: var(--font-color);
   }
 
   .card-seller {
     font-size: 13px;
     font-weight: 500;
-    margin-top: 5px;
     color: var(--font-color-sub);
   }
   
@@ -74,25 +78,27 @@
     overflow: hidden;
     overflow-wrap: break-word;
     hyphens: auto;
-    margin-top: 10px;
     color: var(--font-color-sub);
-  }
-
-  .card-description:hover {
-
   }
   
   .card-divider {
     width: 100%;
     border: 1px solid var(--main-color);
     border-radius: 40px;
-    margin: 5px 0px;
   }
   
   .card-footer {
+    width: 100%;
+    height: 10%;
     display: flex;
     flex-direction: row;
-    align-items: right;
+    justify-content: space-around;
+  }
+
+  .card-redirect {
+    font-size: 10px;
+    font-weight: 500;
+    align-self: flex-start;
   }
   
   .card-price {
@@ -108,35 +114,38 @@
   }
   
   .card-btn {
-    height: 25px;
+    height: 20px;
     background: var(--bg-color);
     border: none;
     /* border: 2px solid var(--main-color);
     border-radius: 5px; */
     /* padding: 5px; */
-    transition: all 0.3s;
   }
   
-  .card-btn svg {
+  .card-btn span {
     width: 100%;
     height: 100%;
     fill: var(--main-color);
-    transition: all 0.3s;
   }
   
   .card-img:hover {
-    transform: translateY(-3px);
+    transform: scale(1.2);
   }
   
   .card-btn:hover {
     border: 2px solid var(--main-focus);
   }
   
-  .card-btn:hover svg {
+  .card-btn:hover span {
     fill: var(--main-focus);
   }
   
   .card-btn:active {
-    transform: translateY(3px);
+    transform: scale(1.2);
   }
   
+  .card-tags {
+    display: flex;
+    flex-direction: row;
+    height: 10%;
+  }
