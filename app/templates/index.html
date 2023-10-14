@@ -7,22 +7,20 @@
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/index.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <title>Stinger Seller</title>
+    <title>stinger seller</title>
 </head>
 <body>
     {% include 'nav.html' %}
     <div class="title">
-        <h1>Stinger Seller</h1>
+        <h1>stinger seller</h1>
     </div>
-
-    <div class="search">
-        <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search for items...">
-        <form action="{{  url_for('index') }}" method="post">
-            <input type="text" id="search_words" name="keywords" placeholder="Search for items...">
-            <button type="submit">Search</button>
-        </form>
-    </div>
+    
+    <form action="{{  url_for('index') }}" method="post">
+        <div class="search">
+        <button type="submit" class="clear-styling"><span class="material-symbols-outlined">search</span></button>
+        <input type="text" id="search_words" name="keywords" placeholder="Search for items...">
+        </div> 
+    </form>
 
     <div class="catalogue">
         {% if items %}
@@ -34,7 +32,7 @@
                 <div class="card-description">{{ item["description"] }} ...</div>
                 <hr class="card-divider">
             <div class="card-footer">
-                <div class="card-redirect"><a href="{{ url_for('item_page', id=item['id']) }}">See more...</a></div>
+                <div class="card-redirect"><a href="{{ url_for('item_page', id=item['id']) }}">see more...</a></div>
                 <div class="card-price">${{ item["price"] }}</div>
                 <a href="{{ url_for('item_page', id=item['id']) }}"><button class="card-btn">
                     <span class="material-symbols-outlined">shopping_cart</span>
@@ -42,11 +40,9 @@
             </div>
             <div class="card-tags">
                 {% for tag in item["tags"] %}
-                    <div class="tag">{{tag}}</div>
+                    <div class="tag" style="background-color:{{tag['background_color']}};color:{{tag['text_color']}};">{{tag["name"]}}</div>
                 {% endfor %}
             </div>
-                    <!-- <p class="card-tag">{{ item["tag"] }}</p>
-                    <p class="card-tag">{{ item["tag"] }}</p> -->
             </div>
             {% endfor %}
     {% else %}
