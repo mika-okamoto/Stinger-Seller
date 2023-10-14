@@ -2,7 +2,7 @@ import os
 import uuid
 import secrets
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash
 
 
 def create_app(test_config=None):
@@ -86,25 +86,33 @@ def create_app(test_config=None):
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
         if request.method == "POST":
+            errored = False
+            if "token" not in request.cookies or request.cookies["token"] not in users:
+                flash("you need to be logged in", category="error")
+                errored = True
             if "image" not in request.files or request.files["image"].filename == "":
-                return redirect(request.url)
+                flash("image needed", category="error")
+                errored = True
             if "description" not in request.form or request.form["description"] == "":
-                return redirect(request.url)
+                flash("description needed", category="error")
+                errored = True
             if "name" not in request.form or request.form["name"] == "":
-                return redirect(request.url)
+                flash("name needed", category="error")
+                errored = True
             if "price" not in request.form or request.form["price"] == "":
-                return redirect(request.url)
-            if request.cookies["token"] not in users:
-                return redirect(request.url)
-            image_filename = str(uuid.uuid4())
-            database = db.get_db()
-            request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
-            database.execute(
-                "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
-                (request.form["name"], users[request.cookies["token"]]["id"], request.form["price"], request.form["description"], image_filename)
-            )
-            database.commit()
-            return redirect(url_for("index"))
+                flash("price needed", category="error")
+                errored = True
+
+            if not errored:
+                image_filename = str(uuid.uuid4())
+                database = db.get_db()
+                request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                database.execute(
+                    "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
+                    (request.form["name"], users[request.cookies["token"]]["id"], request.form["price"], request.form["description"], image_filename)
+                )
+                database.commit()
+                return redirect(url_for("index"))
         return render_template("add.html")
     
     @app.route("/images/<name>")
@@ -113,6 +121,9 @@ def create_app(test_config=None):
 
     @app.route("/login", methods=("GET", "POST"))
     def login():
+        if "token" in request.cookies and request.cookies["token"] in users:
+            return redirect(url_for("check_me"))
+
         if request.method == "POST":
             email = request.form["email"]
             password = request.form["password"]
