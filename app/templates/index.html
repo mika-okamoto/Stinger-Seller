@@ -6,6 +6,26 @@
     <title>Stinger Seller</title>
 </head>
 <body>
-   <h1>Stinger Seller</h1>
+    <div>
+        <h1>Stinger Seller</h1>
+    </div>
+    <div class="search">
+        <input type="text" placeholder="Search for items...">
+    </div>
+    {% for item in get_items() %}
+    <div class="card-container">
+        <img src="placeholder.png" alt="Item photo">
+        <div class="card-inner-container">
+            <p class="card-name">{{ name }}</p>
+            <p class="card-price">{{ price }}</p>
+            <p class="card-seller">{{ seller }}</p>
+            <p class="card-description">{{ description }}</p>
+            <p class="card-tag">{{ tag }}</p>
+            <p class="card-tag">{{ tag }}</p>
+        </div>
+    {% endfor %}
+    </div>
+    
+
 </body>
 </html>
