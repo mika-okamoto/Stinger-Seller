@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/organizationbar.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +26,12 @@
         <button type="submit" class="clear-styling"><span class="material-symbols-outlined">search</span></button>
         <input type="text" id="search_words" name="keywords" placeholder="Search for items...">
         </div> 
+        {% for tag in tags.values() %}
+        <label class="tag-option">
+            <input class="checkbox-input" name="tag-group" value="{{ tag['id'] }}" type="checkbox">
+            <span class="checkbox-text" style="background-color: {{ tag['background_color'] }}; color: {{ tag['text_color'] }};">{{ tag['name'] }}</span>
+        </label>
+        {% endfor %}
     </form>
 
     <div class="catalogue">
@@ -33,7 +40,7 @@
             <div class="card">
                 <div class="card-img"><img src="{{ item['image'] }}" alt="Item photo"></div>
                 <div class="card-title">{{ item["name"] }}</div>
-                <div class="card-seller"><a href="{{url_for("seller_page", id=item["seller_id"])}}">{{ item["seller"] }}</a></div>
+                <div class="card-seller"><a href="{{url_for('seller_page', id=item['seller_id'])}}">{{ item["seller"] }}</a></div>
                 <div class="card-description">{{ item["description"] }} ...</div>
                 <hr class="card-divider">
             <div class="card-footer">
@@ -53,6 +60,30 @@
     {% else %}
     <p>No items match your search</p>
     {% endif %}
+    </div>
+
+    <div class="add"> 
+        <a href="/add-item" >
+            <p>
+                <span class="char1">S</span>
+                <span class="char2">T</span>
+                <span class="char3">A</span>
+                <span class="char4">R</span>
+                <span class="char5">T</span>
+                <span class="char6"> </span>
+                <span class="char7">S</span>
+                <span class="char8">E</span>
+                <span class="char9">L</span>
+                <span class="char10">L</span>
+                <span class="char11">I</span>
+                <span class="char12">N</span>
+                <span class="char13">G</span>
+                <span class="char14">!</span>
+            </p>
+            <button><img src="./static/images/plusSign.png"></button>
+        </a>
+        
+
     </div>
     
     {% include 'footer.html' %}

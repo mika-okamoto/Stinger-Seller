@@ -2,6 +2,7 @@ import os
 import uuid
 import secrets
 import collections
+import shutil
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
@@ -46,14 +47,38 @@ def create_app(test_config=None):
             keywords = request.form.get("keywords")
             items = []
             seen_items = set()
-            for i in keywords.split():
-                search_results = database.execute("""
-                    SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-                    FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ?
-                    """, ("%" + i + "%",)).fetchall()
-                
-                items.extend([i for i in search_results if i[0] not in seen_items])
-                seen_items |= {i[0] for i in search_results}
+            if keywords != "":
+                for i in keywords.split():
+                    search_results = database.execute("""
+                        SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                        FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ?
+                        """, ("%" + i + "%",)).fetchall()
+                    
+                    items.extend([i for i in search_results if i[0] not in seen_items])
+                    seen_items |= {i[0] for i in search_results}
+            else:
+                items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id
+                """).fetchall() 
+
+            taglist = request.form.getlist('tag-group')
+            print(len(taglist))
+            if len(taglist) != 0:
+                tagged_items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id JOIN itemtags ON item.id = itemtags.item_id 
+                WHERE """ + "OR ".join("itemtags.tag_id = ?" for _ in range(len(taglist))) +
+                "GROUP BY item.id HAVING COUNT(*) = ?", (*taglist, len(taglist),)).fetchall()
+            else: 
+                tagged_items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id
+                """).fetchall() 
+            
+            tagged_items = {item[0] for item in tagged_items}
+
+            items = [item for item in items if item[0] in tagged_items]
         else: 
             items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
@@ -68,7 +93,8 @@ def create_app(test_config=None):
             row[0]: {
                 "name": row[1],
                 "background_color": row[2],
-                "text_color": row[3]
+                "text_color": row[3],
+                "id": row[0]
             }
             for row in tags
         }
@@ -90,7 +116,7 @@ def create_app(test_config=None):
             } for item in items
         ]
 
-        return render_template("index.html", items=items)
+        return render_template("index.html", items=items, tags=tags)
 
     @app.route("/items/<id>", methods=("GET", "POST"))
     def item_page(id):
@@ -184,9 +210,6 @@ def create_app(test_config=None):
             if "token" not in request.cookies or request.cookies["token"] not in users:
                 flash("you need to be logged in", category="error")
                 errored = True
-            if "image" not in request.files or request.files["image"].filename == "":
-                flash("image needed", category="error")
-                errored = True
             if "description" not in request.form or request.form["description"] == "":
                 flash("description needed", category="error")
                 errored = True
@@ -200,7 +223,10 @@ def create_app(test_config=None):
             if not errored:
                 image_filename = str(uuid.uuid4())
                 database = db.get_db()
-                request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                if "image" not in request.files or request.files["image"].filename == "":
+                    shutil.copy("app/static/images/logo.png", os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                else:
+                    request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
                 id_row = database.execute(
                     "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
                     (request.form["name"], users[request.cookies["token"]], round(float(request.form["price"]), 2), request.form["description"], image_filename)
