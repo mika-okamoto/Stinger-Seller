@@ -38,7 +38,36 @@ def create_app(test_config=None):
     
     @app.route('/')
     def index():
-        return render_template("index.html")
+        database = db.get_db()
+        items = database.execute("SELECT id, name, seller, price, description, image_path, created FROM item").fetchall()
+        # make it easier to work with
+        items = [
+            {
+                "id": item[0],
+                "name": item[1],
+                "seller": item[2],
+                "price": item[3],
+                "description": item[4],
+                "created": item[6],
+                "image": url_for("get_image", name=item[5])
+            } for item in items
+        ]
+        return render_template("index.html", items=items)
+
+    @app.route("/items/<id>")
+    def item_page(id):
+        database = db.get_db()
+        item = database.execute("SELECT name, seller, price, description, image_path, created FROM item WHERE id=?", (id,)).fetchone()
+        # make it easier to work with
+        item = {
+            "name": item[0],
+            "seller": item[1],
+            "price": item[2],
+            "description": item[3],
+            "created": item[5],
+            "image": url_for("get_image", name=item[4])
+        }
+        return render_template("item.html", id=id, item=item)
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
