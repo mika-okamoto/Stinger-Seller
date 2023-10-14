@@ -178,13 +178,16 @@ def create_app(test_config=None):
 
     @app.route("/login", methods=("GET", "POST"))
     def login():
-        if "token" in request.cookies and request.cookies["token"] in users:
-            return redirect(url_for("check_me"))
+        if "token" in request.cookies:
+            resp = make_response(redirect(url_for("index")))
+            resp.delete_cookie('token')
+            return resp 
 
         if request.method == "POST":
             email = request.form["email"]
             password = request.form["password"]
             display_name = request.form.get("displayname")
+            description = request.form.get("description")
 
             if not email or not password:
                 return redirect(request.url)
@@ -194,11 +197,19 @@ def create_app(test_config=None):
             if records >= 1:
                 records = database.execute("SELECT count(*) FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
                 if records == 0:
+                    flash("incorrect password")
                     return render_template("login.html", signup=True)
-            elif display_name:
-                database.execute("INSERT INTO user (email, password, display_name) VALUES (?, ?, ?)", (email, password, display_name))
+            elif display_name and description:
+                database.execute(
+                    "INSERT INTO user (email, password, display_name, description) VALUES (?, ?, ?, ?)",
+                    (email, password, display_name, description)
+                )
                 database.commit()
             else:
+                if display_name == "":
+                    flash("missing display name")
+                if description == "":
+                    flash("missing description")
                 return render_template("login.html", signup=True)
         
             display_name, id = database.execute("SELECT display_name, id FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()

@@ -8,6 +8,7 @@
 <body>
     {% include 'nav.html' %}
     <h1>Login</h1>
+    {% include "errors.html" %}
     <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
         <label for="email">Email</label><br>
@@ -29,6 +30,12 @@
         <input type="text" name="displayname"
                placeholder="Display name" class="form-control"
                value="{{ request.form['displayname'] }}"></input>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label><br>
+        <textarea name="description" placeholder="Seller Description"
+                  class="form-control">{{ request.form['description'] }}</textarea>
     </div>
     {% endif %}
 

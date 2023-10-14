@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS item;
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS tag;
+DROP TABLE IF EXISTS itemtags;
 
 CREATE TABLE item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,6 +19,7 @@ CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     display_name TEXT NOT NULL,
     email TEXT NOT NULL,
+    description TEXT NOT NULL,
     -- 😬
     password TEXT NOT NULL
 );
