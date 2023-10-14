@@ -3,6 +3,6 @@
         <li><img id = "logo" src="{{ url_for('static', filename= 'images/logo.png') }}" height="20px" alt="Logo"/></li>
         <li><a href="/">home</a></li>
         <li><a href="/add-item" >add item</a></li>
-        <li><a href="/login" >{{ "Logout" if "token" in request.cookies else "login/register" }}</a></li>
+        <li><a href="/login" >{{ "logout" if "token" in request.cookies else "login/register" }}</a></li>
     </ul>
 </nav>
