@@ -1,10 +1,13 @@
 import os
 import uuid
+import secrets
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response
 
 
 def create_app(test_config=None):
+    users = {}
+
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -109,18 +112,34 @@ def create_app(test_config=None):
             records = database.execute("SELECT count(*) FROM user WHERE email = ?", (email,)).fetchone()[0]
             if records >= 1:
                 records = database.execute("SELECT count(*) FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
-                if records >= 1:
-                    # logged in
-                    print("logged in")
-                else:
+                if records == 0:
                     return render_template("login.html", signup=True)
             elif display_name:
                 database.execute("INSERT INTO user (email, password, display_name) VALUES (?, ?, ?)", (email, password, display_name))
                 database.commit()
+            else:
+                return render_template("login.html", signup=True)
         
-            return render_template("login.html", signup=True)
+            display_name, id = database.execute("SELECT display_name, id FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()
+            token = secrets.token_hex(16)
+            users[token] = {
+                "display_name": display_name,
+                "id": id
+            }
+            resp = make_response(redirect(url_for("index")))
+            resp.set_cookie('token', token)
+            return resp 
+
 
         return render_template("login.html")
+
+    @app.route("/me")
+    def check_me():
+        token = request.cookies["token"]
+        if token in users:
+            return str(users[token])
+        else:
+            return redirect(url_for("login"))
 
     from . import db
     db.init_app(app)
