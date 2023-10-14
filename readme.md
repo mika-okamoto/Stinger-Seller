@@ -26,3 +26,8 @@ Now, just:
 flask --app app init-db
 flask --app app run --debug
 ```
+
+If you want some demonstration data, run:
+```sh
+flask --app app seed-db
+```

@@ -34,7 +34,7 @@ def create_app(test_config=None):
 
     # ensure the instance folder exists
     try:
-        os.makedirs(app.instance_path)
+        os.makedirs(os.path.join(app.instance_path, "images"))
     except OSError:
         pass
     
