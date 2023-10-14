@@ -1,6 +1,7 @@
 import os
+import uuid
 
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 
 def create_app(test_config=None):
@@ -13,6 +14,12 @@ def create_app(test_config=None):
         MAX_CONTENT_LENGTH=16 * 1000 * 1000,
         UPLOAD_FOLDER=os.path.join(app.instance_path, "images"),
     )
+
+    # make sure the folder to upload images to exists
+    try:
+        os.mkdir(app.config["UPLOAD_FOLDER"])
+    except FileExistsError:
+        pass
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -33,8 +40,28 @@ def create_app(test_config=None):
     def index():
         return render_template("index.html")
 
-    @app.route('/add-item')
+    @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
+        if request.method == "POST":
+            if "image" not in request.files or request.files["image"].filename == "":
+                return redirect(request.url)
+            if "description" not in request.form or request.form["description"] == "":
+                return redirect(request.url)
+            if "name" not in request.form or request.form["name"] == "":
+                return redirect(request.url)
+            if "seller" not in request.form or request.form["seller"] == "":
+                return redirect(request.url)
+            if "price" not in request.form or request.form["price"] == "":
+                return redirect(request.url)
+            image_filename = str(uuid.uuid4())
+            database = db.get_db()
+            request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+            database.execute(
+                "INSERT INTO item (name, seller, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
+                (request.form["name"], request.form["seller"], request.form["price"], request.form["description"], image_filename)
+            )
+            database.commit()
+            return redirect(url_for("index"))
         return render_template("add.html")
     
     @app.route("/images/<name>")

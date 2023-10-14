@@ -7,5 +7,5 @@ CREATE TABLE item (
     seller TEXT NOT NULL,
     price FLOAT NOT NULL,
     description TEXT NOT NULL,
-    image_path TEXT NOT NULL,
+    image_path TEXT NOT NULL
 );
