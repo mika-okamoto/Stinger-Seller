@@ -1,8 +1,33 @@
 <nav>
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/organizationbar.css') }}">
     <ul> 
-        <li><img id = "logo" src="{{ url_for('static', filename= 'images/logo.png') }}" height="20px" alt="Logo"/></li>
-        <li><a href="/">home</a></li>
-        <li><a href="/add-item" >add item</a></li>
-        <li><a href="/login" >{{ "logout" if "token" in request.cookies else "login/register" }}</a></li>
+        <div class="top-bar"> 
+            <li><img class="logo-top" id = "logo" src="{{ url_for('static', filename= 'images/logo.png') }}" alt="Logo"/></li>
+            <li><a href="/">HOME</a></li>
+            <li><a href="/login" >{{ "Logout" if "token" in request.cookies and request.cookies["token"] in g.users else "login/register" }}</a></li>
+        </div>
+        <div class="add"> 
+            <a href="/add-item" >
+                <p>
+                    <span class="char1">S</span>
+                    <span class="char2">T</span>
+                    <span class="char3">A</span>
+                    <span class="char4">R</span>
+                    <span class="char5">T</span>
+                    <span class="char6"> </span>
+                    <span class="char7">S</span>
+                    <span class="char8">E</span>
+                    <span class="char9">L</span>
+                    <span class="char10">L</span>
+                    <span class="char11">I</span>
+                    <span class="char12">N</span>
+                    <span class="char13">G</span>
+                    <span class="char14">!</span>
+                </p>
+                <button><img src="./static/images/plusSign.png"></button>
+            </a>
+            
+
+        </div>
     </ul>
 </nav>

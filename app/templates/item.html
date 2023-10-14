@@ -11,11 +11,17 @@
     <h1>Item Information</h1>
     <p>ID: {{id}}</p>
     <p>Name: {{item["name"]}}</p>
-    <p><a href="{{url_for("seller_page", id=item["seller_id"])}}">Seller: {{item["seller"]}}</a></p>
+    <p><a href="{{url_for('seller_page', id=item['seller_id'])}}">Seller: {{item["seller"]}}</a></p>
     <p>Price: ${{item["price"]}}</p>
     <p>Description: {{item["description"]}}</p>
     <p>Created: {{item["created"]}}</p>
     <img src="{{item["image"]}}">
+
+    {% if current_user and current_user == item["seller_id"] %}
+    <form method="POST">
+        <button type="submit" class="btn btn-primary">Delete item</button>
+    </form>
+    {% endif %}
     {% include 'footer.html' %}
 </body>
 </html>

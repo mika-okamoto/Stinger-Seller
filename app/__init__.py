@@ -3,7 +3,7 @@ import uuid
 import secrets
 import collections
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
 
 def create_app(test_config=None):
@@ -40,6 +40,7 @@ def create_app(test_config=None):
     
     @app.route('/', methods=["GET", "POST"])
     def index():
+        g.users = users
         database = db.get_db()
         if request.method == "POST": 
             keywords = request.form.get("keywords")
@@ -91,9 +92,22 @@ def create_app(test_config=None):
 
         return render_template("index.html", items=items)
 
-    @app.route("/items/<id>")
+    @app.route("/items/<id>", methods=("GET", "POST"))
     def item_page(id):
+        g.users = users
         database = db.get_db()
+        if request.method == "POST":
+            count = database.execute("""
+            SELECT COUNT(*)
+            FROM item WHERE item.id = ? AND item.seller_id = ?
+            """, (id, users[request.cookies["token"]])).fetchone()[0]
+            if count >= 1:
+                database.execute("DELETE FROM item WHERE item.id = ? AND item.seller_id = ?", (id, users[request.cookies["token"]]))
+                database.commit()
+                return redirect(url_for("index"))
+            else:
+                return redirect(request.url)
+
         item = database.execute("""
         SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
         FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?
@@ -120,10 +134,11 @@ def create_app(test_config=None):
             "image": url_for("get_image", name=item[4]),
             "tags": [tags[row[0]] for row in items_from_db]
         }
-        return render_template("item.html", id=id, item=item)
+        return render_template("item.html", id=id, item=item, current_user=users.get(request.cookies.get("token")))
 
     @app.route("/sellers/<id>")
     def seller_page(id):
+        g.users = users
         database = db.get_db()
         items = database.execute("""
         SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
@@ -150,6 +165,10 @@ def create_app(test_config=None):
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
+        g.users = users
+        if "token" not in request.cookies or request.cookies["token"] not in users:
+            return redirect(url_for("login"))
+
         database = db.get_db()
         tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
         tags = [
@@ -184,7 +203,7 @@ def create_app(test_config=None):
                 request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
                 id_row = database.execute(
                     "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
-                    (request.form["name"], users[request.cookies["token"]]["id"], round(float(request.form["price"]), 2), request.form["description"], image_filename)
+                    (request.form["name"], users[request.cookies["token"]], round(float(request.form["price"]), 2), request.form["description"], image_filename)
                 ).fetchone()
                 database.executemany(
                     "INSERT INTO itemtags (item_id, tag_id) VALUES (?, ?)",
@@ -196,10 +215,12 @@ def create_app(test_config=None):
     
     @app.route("/images/<name>")
     def get_image(name):
+        g.users = users
         return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
     @app.route("/login", methods=("GET", "POST"))
     def login():
+        g.users = users
         if "token" in request.cookies:
             resp = make_response(redirect(url_for("index")))
             resp.delete_cookie('token')
@@ -234,12 +255,9 @@ def create_app(test_config=None):
                     flash("missing description")
                 return render_template("login.html", signup=True)
         
-            display_name, id = database.execute("SELECT display_name, id FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()
+            id = database.execute("SELECT id FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
             token = secrets.token_hex(16)
-            users[token] = {
-                "display_name": display_name,
-                "id": id
-            }
+            users[token] = id
             resp = make_response(redirect(url_for("index")))
             resp.set_cookie('token', token)
             return resp 
@@ -247,11 +265,35 @@ def create_app(test_config=None):
 
         return render_template("login.html")
     
-    @app.route("/me")
+    @app.route("/me", methods=("GET", "POST"))
     def check_me():
-        token = request.cookies["token"]
-        if token in users:
-            return str(users[token])
+        g.users = users
+        if "token" in request.cookies and request.cookies["token"] in users:
+            token = request.cookies["token"]
+            database = db.get_db()
+            if request.method == "POST":
+                new_display_name = request.form["displayname"]
+                new_description = request.form["description"]
+
+                if not (new_display_name or new_description):
+                    flash("either update display name, description, or both")
+                else:
+                    if new_display_name:
+                        database.execute(
+                            "UPDATE user SET display_name = ? WHERE id = ?",
+                            (new_display_name, users[token],)
+                        )
+                    if new_description:
+                        database.execute(
+                            "UPDATE user SET description = ? WHERE id = ?",
+                            (new_description, users[token],)
+                        )
+                    database.commit()
+
+                    return redirect(request.url)
+
+            display_name, description = database.execute("SELECT display_name, description FROM user WHERE id = ?", (users[token],)).fetchone()
+            return render_template("profile.html", display_name=display_name, description=description)
         else:
             return redirect(url_for("login"))
 

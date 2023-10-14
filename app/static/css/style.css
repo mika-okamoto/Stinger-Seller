@@ -29,9 +29,3 @@ nav ul {
 li {
   float: left;
 }
-
-nav li {
-  display: block;
-  padding: 8px;
-  background-color: red;
-}
