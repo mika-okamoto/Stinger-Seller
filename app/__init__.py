@@ -40,7 +40,10 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         database = db.get_db()
-        items = database.execute("SELECT id, name, seller, price, description, image_path, created FROM item").fetchall()
+        items = database.execute("""
+        SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created
+        FROM item JOIN user ON user.id=item.seller_id
+        """).fetchall()
         # make it easier to work with
         items = [
             {
@@ -58,7 +61,10 @@ def create_app(test_config=None):
     @app.route("/items/<id>")
     def item_page(id):
         database = db.get_db()
-        item = database.execute("SELECT name, seller, price, description, image_path, created FROM item WHERE id=?", (id,)).fetchone()
+        item = database.execute("""
+        SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created
+        FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?
+        """, (id,)).fetchone()
         # make it easier to work with
         item = {
             "name": item[0],
@@ -79,16 +85,16 @@ def create_app(test_config=None):
                 return redirect(request.url)
             if "name" not in request.form or request.form["name"] == "":
                 return redirect(request.url)
-            if "seller" not in request.form or request.form["seller"] == "":
-                return redirect(request.url)
             if "price" not in request.form or request.form["price"] == "":
+                return redirect(request.url)
+            if request.cookies["token"] not in users:
                 return redirect(request.url)
             image_filename = str(uuid.uuid4())
             database = db.get_db()
             request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
             database.execute(
-                "INSERT INTO item (name, seller, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
-                (request.form["name"], request.form["seller"], request.form["price"], request.form["description"], image_filename)
+                "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
+                (request.form["name"], users[request.cookies["token"]]["id"], request.form["price"], request.form["description"], image_filename)
             )
             database.commit()
             return redirect(url_for("index"))
