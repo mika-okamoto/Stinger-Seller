@@ -23,6 +23,6 @@ pip install -r requirements.txt
 
 Now, just:
 ```sh
-flask --app flaskr init-db
+flask --app app init-db
 flask --app app run --debug
 ```
