@@ -1,3 +1,6 @@
 # virtual environments
 .venv/
 venv/
+
+# git
+.gitattributes
