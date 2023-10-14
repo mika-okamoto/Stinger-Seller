@@ -15,12 +15,13 @@
 
 .catalogue {
   width: 90vw;
-  height: 70vh;
+  height: 60vh;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
   overflow-y: auto;
+  margin-top: 20px;
 }
 
 .card {
@@ -56,12 +57,22 @@
   .card-title {
     font-size: var(--title-text);
     font-weight: 500;
+    width: 100%;
+    overflow: hidden;
+    max-height: 30px;
+    overflow-wrap: break-word;
+    hyphens: auto;
     color: var(--font-color);
   }
 
   .card-seller {
     font-size: var(--small-text);
     font-weight: 500;
+    width: 100%;
+    overflow: hidden;
+    max-height: 30px;
+    overflow-wrap: break-word;
+    hyphens: auto;
     color: var(--font-color-sub);
   }
   
@@ -146,4 +157,8 @@
   .tag {
     border-radius: 3px;
     font-size: var(--small-text);
+  }
+
+  .tag-option {
+    font-size: var(--body-text);
   }

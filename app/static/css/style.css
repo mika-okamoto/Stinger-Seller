@@ -35,9 +35,8 @@ li {
   display: flex;
   flex-direction: row;
   overflow: hidden;
-  float:right;
+  float: right;
   font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
-  bottom: 5%; 
   margin-right: 2%;
 }
 
@@ -46,7 +45,7 @@ li {
   float: left;
   color: #312f2f;
   text-align: center;
-  padding: 14px 16px;
+  padding: 8px 16px;
   text-decoration: none;
   font-size: 17px;
 }
@@ -64,16 +63,15 @@ li {
 }
 
 .logo-top {
-  top: 5%;
-  width: 15%; 
-  height: 15%; 
+  width: 5%; 
+  max-height: 5%; 
   float: left; 
 }
 
 .bottom-bar {
   overflow: hidden;
   font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
-  margin-bottom: 2.5%;
+  margin: 2.2% 0px;
 }
 
 /* Style the links inside the navigation bar */
@@ -95,7 +93,6 @@ li {
 
 /* Add a color to the active/current link */
 .bottom-bar a.active {
-  background-color: #15d80f;
   color: white;
 }
 
