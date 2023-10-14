@@ -1,6 +1,7 @@
 import os
 import uuid
 import secrets
+import collections
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash
 
@@ -57,21 +58,37 @@ def create_app(test_config=None):
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
                 FROM item JOIN user ON user.id=item.seller_id
                 """).fetchall()
+
+        tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
+        item_tags_from_db = database.execute("SELECT item_id, tag_id FROM itemtags").fetchall()
             
         # make it easier to work with
-        if len(items) != 0:
-            items = [
-                {
-                    "id": item[0],
-                    "name": item[1],
-                    "seller": item[2],
-                    "seller_id": item[7],
-                    "price": item[3],
-                    "description": item[4],
-                    "created": item[6],
-                    "image": url_for("get_image", name=item[5])
-                } for item in items
-            ]
+        tags = {
+            row[0]: {
+                "name": row[1],
+                "background_color": row[2],
+                "text_color": row[3]
+            }
+            for row in tags
+        }
+        item_tags = collections.defaultdict(list)
+        for item_tag_pair in item_tags_from_db:
+            item_tags[item_tag_pair[0]].append(tags[item_tag_pair[1]])
+        
+        items = [
+            {
+                "id": item[0],
+                "name": item[1],
+                "seller": item[2],
+                "seller_id": item[7],
+                "price": item[3],
+                "description": item[4],
+                "created": item[6],
+                "image": url_for("get_image", name=item[5]),
+                "tags": item_tags[item[0]]
+            } for item in items
+        ]
+
         return render_template("index.html", items=items)
 
     @app.route("/items/<id>")
@@ -81,6 +98,17 @@ def create_app(test_config=None):
         SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
         FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?
         """, (id,)).fetchone()
+        tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
+        tags = {
+            row[0]: {
+                "name": row[1],
+                "background_color": row[2],
+                "text_color": row[3]
+            }
+            for row in tags
+        }
+        items_from_db = database.execute("SELECT tag_id FROM itemtags WHERE item_id = ?", (id,)).fetchall()
+
         # make it easier to work with
         item = {
             "name": item[0],
@@ -89,7 +117,8 @@ def create_app(test_config=None):
             "price": item[2],
             "description": item[3],
             "created": item[5],
-            "image": url_for("get_image", name=item[4])
+            "image": url_for("get_image", name=item[4]),
+            "tags": [tags[row[0]] for row in items_from_db]
         }
         return render_template("item.html", id=id, item=item)
 
@@ -101,7 +130,6 @@ def create_app(test_config=None):
     def add_item():
         database = db.get_db()
         tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
-        print(tags)
         tags = [
             {
                 "id": tag[0],
@@ -132,9 +160,13 @@ def create_app(test_config=None):
                 image_filename = str(uuid.uuid4())
                 database = db.get_db()
                 request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
-                database.execute(
-                    "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?)",
+                id_row = database.execute(
+                    "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
                     (request.form["name"], users[request.cookies["token"]]["id"], request.form["price"], request.form["description"], image_filename)
+                ).fetchone()
+                database.executemany(
+                    "INSERT INTO itemtags (item_id, tag_id) VALUES (?, ?)",
+                    [(id_row[0], tag) for tag in request.form.getlist("tag-group")]
                 )
                 database.commit()
                 return redirect(url_for("index"))

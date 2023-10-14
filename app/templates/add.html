@@ -41,7 +41,7 @@
         
         {% for tag in tags %}
         <label class="tag-option">
-            <input class="checkbox-input" name="tag-group" value="{{ tag['name'] }}" type="checkbox">
+            <input class="checkbox-input" name="tag-group" value="{{ tag['id'] }}" type="checkbox">
             <span class="checkbox-text" style="background-color: {{ tag['background_color'] }}; color: {{ tag['text_color'] }};">{{ tag['name'] }}</span>
         </label>
         {% endfor %}
