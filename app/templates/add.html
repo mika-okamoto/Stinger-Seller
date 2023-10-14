@@ -3,9 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>FlaskBlog</title>
+    <title>Add Item</title>
 </head>
 <body>
-   <h1>Welcome to FlaskBlog</h1>
+   <h1>Add Your Item</h1>
+   <form method="post" action="" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="name">Name</label><br>
+        <input type="text" name="name"
+               placeholder="Item Name" class="form-control"
+               value="{{ request.form['title'] }}"></input>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label><br>
+        <textarea name="description" placeholder="Item Description"
+                  class="form-control">{{ request.form['description'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="image">Upload Image:</label>
+        <input type="file" name="image" id="image" accept="image/*" value="{{ request.form['image_path'] }}">
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
 </body>
 </html>
