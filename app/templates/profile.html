@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <title>Profile</title>
+</head>
+<body>
+    {% include 'nav.html' %}
+    <h1>Profile</h1>
+    {% include "errors.html" %}
+    <form method="post" action="" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="displayname">Display name</label><br>
+        <input type="text" name="displayname"
+               placeholder="{{ display_name }}" class="form-control"
+               value="{{ request.form['email'] }}"></input>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label><br>
+        <textarea name="description" placeholder="{{ description }}"
+                  class="form-control">{{ request.form['description'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Update profile</button>
+    </div>
+    {% include 'footer.html' %}
+</form>
+</body>
+</html>
