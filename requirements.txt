@@ -1,3 +1,5 @@
 Flask
 click
 spacy
+scipy 
+gensim
