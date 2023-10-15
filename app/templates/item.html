@@ -17,7 +17,11 @@
         <img id="item-img" src="{{item["image"]}}">
         <div class="seller-price">
             <p><a href="{{url_for('seller_page', id=item['seller_id'])}}">seller: {{item["seller"]}}</a></p>
+<<<<<<< Updated upstream
             <p>price: ${{ "{:.2f}".format(item["price"]) }}</p>
+=======
+            <p>price: ${{item["price"]}}</p>
+>>>>>>> Stashed changes
         </div>
         <p>description: {{item["description"]}}</p>
         <p>created: {{item["created"]}}</p>
