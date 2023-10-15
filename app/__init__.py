@@ -3,8 +3,9 @@ import uuid
 import secrets
 import collections
 import shutil
+import json
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g, jsonify
 
 import spacy
 from spacy import displacy
@@ -12,6 +13,7 @@ import en_core_web_sm
 
 def create_app(test_config=None):
     users = {}
+    payments = {}
 
     # activate spacy 
     nlp = spacy.load("en_core_web_sm")
@@ -56,7 +58,7 @@ def create_app(test_config=None):
                 for i in keywords.split():
                     search_results = database.execute("""
                         SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-                        FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ?
+                        FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ? AND processing = FALSE
                         """, ("%" + i + "%",)).fetchall()
                     
                     items.extend([i for i in search_results if i[0] not in seen_items])
@@ -64,7 +66,7 @@ def create_app(test_config=None):
             else:
                 items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-                FROM item JOIN user ON user.id=item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id WHERE processing = FALSE
                 """).fetchall() 
 
             taglist = request.form.getlist('tag-group')
@@ -87,7 +89,7 @@ def create_app(test_config=None):
         else: 
             items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-                FROM item JOIN user ON user.id=item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id WHERE processing = FALSE
                 """).fetchall()
 
         tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
@@ -273,9 +275,11 @@ def create_app(test_config=None):
             # TODO: success path which removes the item upon purchase + adds it to profile
             success_url=url_for("index", _external=True),
             cancel_url=url_for("index", _external=True),
-        ).url
+        )
 
-        return redirect(to)
+        payments[to.id] = id
+
+        return redirect(to.url)
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
@@ -360,7 +364,7 @@ def create_app(test_config=None):
 
             if not email or not password:
                 return redirect(request.url)
-        
+
             database = db.get_db()
             records = database.execute("SELECT count(*) FROM user WHERE email = ?", (email,)).fetchone()[0]
             if records >= 1:
@@ -433,7 +437,10 @@ def create_app(test_config=None):
                     return redirect(request.url)
 
             display_name, description = database.execute("SELECT display_name, description FROM user WHERE id = ?", (users[token],)).fetchone()
-            return render_template("profile.html", display_name=display_name, description=description)
+            # this should really be things that are fully paid for, but don't have that kind of time during a demo.
+            processing_items = database.execute("SELECT id, name FROM item WHERE seller_id = ? AND processing = TRUE", (users[token],)).fetchall()
+            processing_items = [{"id": row[0], "name": row[1]} for row in processing_items]
+            return render_template("profile.html", display_name=display_name, description=description, processing_items=processing_items)
         else:
             return redirect(url_for("login"))
     
@@ -448,6 +455,50 @@ def create_app(test_config=None):
             return redirect(login)
 
         return redirect(url_for("index"))
+
+    # stripe webhook code (taken from https://stripe.com/docs/webhooks/quickstart with modifications)
+    @app.route('/webhook', methods=("POST",))
+    def webhook():
+        if not app.config["STRIPE"]:
+            return jsonify(success=False)
+
+        event = None
+        payload = request.data
+
+        try:
+            event = json.loads(payload)
+        except json.decoder.JSONDecodeError as e:
+            print('⚠️  Webhook error while parsing basic request.' + str(e))
+            return jsonify(success=False)
+        if app.config["STRIPE_WEBHOOK_SECRET"]:
+            # Only verify the event if there is an endpoint secret defined
+            # Otherwise use the basic event deserialized with json
+            sig_header = request.headers.get('stripe-signature')
+            try:
+                event = stripe.Webhook.construct_event(
+                    payload, sig_header, app.config["STRIPE_WEBHOOK_SECRET"]
+                )
+            except stripe.error.SignatureVerificationError as e:
+                print('⚠️  Webhook signature verification failed.' + str(e))
+                return jsonify(success=False)
+
+        # Handle the event
+        if event and event['type'] == 'checkout.session.completed':
+            session_complete = event['data']['object']
+            database = db.get_db()
+            database.execute("UPDATE item SET processing = ? WHERE id = ?", (True, payments.pop(session_complete["id"])))
+            database.commit()
+        elif event and event['type'] == 'checkout.session.async_payment_succeeded':
+            # we don't use this because it wouldn't complete in time for the demo.
+            payment_complete = event['data']['object']
+            print("payment complete!", payment_complete)
+            # Then define and call a method to handle the successful attachment of a PaymentMethod.
+            # handle_payment_method_attached(payment_method)
+        else:
+            # Unexpected event type
+            print('Unhandled event type {}'.format(event['type']))
+
+        return jsonify(success=True)
 
     from . import db
     db.init_app(app)

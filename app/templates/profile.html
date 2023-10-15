@@ -26,6 +26,15 @@
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Update profile</button>
     </div>
+
+    {% if processing_items %}
+    <h3>Processing items:</h3>
+    <lu>
+    {% for item in processing_items %}
+    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a></li>
+    {% endfor %}
+    </lu>
+    {% endif %}
     {% include 'footer.html' %}
 </form>
 </body>
