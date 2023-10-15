@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/forms.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>login</title>
+</head>
+<body>
+    {% include 'nav.html' %}
+    <h1>check out</h1>
+    {% include "errors.html" %}
+    <form method="post" action="" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label for="note">note</label><br>
+        <textarea name="note" placeholder="note for the seller"
+                  class="form-control">{{ request.form['note'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">check out</button>
+    </div>
+    {% include 'footer.html' %}
+</form>
+</body>
+</html>

@@ -28,13 +28,6 @@
     </div>
 
     <div class="form-group">
-        <label for="contactmethod">preferred contact method</label><br>
-        <input type="text" name="contactmethod"
-               placeholder="{{ contact_method }}" class="form-control"
-               value="{{ request.form['contact_method'] }}"></input>
-    </div>
-
-    <div class="form-group">
         <label for="description">description</label><br>
         <textarea name="description" placeholder="{{ description }}"
                   class="form-control">{{ request.form['description'] }}</textarea>
@@ -48,7 +41,7 @@
     <h3>Processing items:</h3>
     <lu>
     {% for item in processing_items %}
-    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a></li>
+    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a><br><pre>{{item["note"]}}</pre></li>
     {% endfor %}
     </lu>
     {% endif %}

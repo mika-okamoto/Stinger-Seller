@@ -258,29 +258,35 @@ def create_app(test_config=None):
 
         return render_template("seller.html", id=id, items=items, seller=seller, tags = tags)
 
-    @app.route("/checkout/<id>", methods=("POST",))
+    @app.route("/checkout/<id>", methods=("GET", "POST"))
     def checkout(id):
         g.users = users
-        if not app.config["STRIPE"]:
-            return "stripe is not enabled"
 
-        database = db.get_db()
-        price_id, account_id = database.execute("SELECT item.stripe_price_id, user.stripe_id FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?", (id,)).fetchone()
-        to = stripe.checkout.Session.create(
-            mode="payment",
-            line_items=[{"price": price_id, "quantity": 1}],
-            payment_intent_data={
-                #"application_fee_amount": 123,
-                "transfer_data": {"destination": account_id},
-            },
-            # TODO: success path which removes the item upon purchase + adds it to profile
-            success_url=url_for("index", _external=True),
-            cancel_url=url_for("index", _external=True),
-        )
+        if request.method == "POST" and request.form["note"]:
+            database = db.get_db()
+            if app.config["STRIPE"]:
+                price_id, account_id = database.execute("SELECT item.stripe_price_id, user.stripe_id FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?", (id,)).fetchone()
+                to = stripe.checkout.Session.create(
+                    mode="payment",
+                    line_items=[{"price": price_id, "quantity": 1}],
+                    payment_intent_data={
+                        #"application_fee_amount": 123,
+                        "transfer_data": {"destination": account_id},
+                    },
+                    success_url=url_for("index", _external=True),
+                    cancel_url=url_for("index", _external=True),
+                )
 
-        payments[to.id] = id
+                payments[to.id] = (id, request.form["note"])
+                return redirect(to.url)
+            else:
+                database.execute("UPDATE item SET processing = ?, note = ? WHERE id = ?", (True, request.form["note"], id))
+                database.commit()
+                return redirect(url_for("index"))
+        elif request.method == "POST":
+            flash("please add a note")
 
-        return redirect(to.url)
+        return render_template("checkout.html")
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
@@ -449,8 +455,8 @@ def create_app(test_config=None):
 
             display_name, description, contact_method = database.execute("SELECT display_name, description, contact_method FROM user WHERE id = ?", (users[token],)).fetchone()
             # this should really be things that are fully paid for, but don't have that kind of time during a demo.
-            processing_items = database.execute("SELECT id, name FROM item WHERE seller_id = ? AND processing = TRUE", (users[token],)).fetchall()
-            processing_items = [{"id": row[0], "name": row[1]} for row in processing_items]
+            processing_items = database.execute("SELECT id, name, note FROM item WHERE seller_id = ? AND processing = TRUE", (users[token],)).fetchall()
+            processing_items = [{"id": row[0], "name": row[1], "note": row[2]} for row in processing_items]
             return render_template("profile.html", display_name=display_name, description=description, processing_items=processing_items, contact_method=contact_method)
         else:
             return redirect(url_for("login"))
@@ -497,7 +503,8 @@ def create_app(test_config=None):
         if event and event['type'] == 'checkout.session.completed':
             session_complete = event['data']['object']
             database = db.get_db()
-            database.execute("UPDATE item SET processing = ? WHERE id = ?", (True, payments.pop(session_complete["id"])))
+            transaction_data = payments.pop(session_complete["id"])
+            database.execute("UPDATE item SET processing = ?, note = ? WHERE id = ?", (True, transaction_data[1], transaction_data[0]))
             database.commit()
         elif event and event['type'] == 'checkout.session.async_payment_succeeded':
             # we don't use this because it wouldn't complete in time for the demo.

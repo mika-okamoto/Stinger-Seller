@@ -13,6 +13,7 @@ CREATE TABLE item (
     description TEXT NOT NULL,
     image_path TEXT NOT NULL,
     stripe_price_id TEXT,
+    note TEXT,
 
     FOREIGN KEY(seller_id) REFERENCES user(id)
 );
