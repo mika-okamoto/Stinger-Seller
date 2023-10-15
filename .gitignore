@@ -13,3 +13,9 @@ instance/
 
 # stripe
 stripe.exe
+
+# ginsim 
+des_lsi_model_mm
+des_lsi_model_mm.index
+des_tfidf_model_mm
+des_tfidf_model_mm.index
