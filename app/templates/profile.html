@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/forms.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/profile.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
@@ -11,42 +12,47 @@
 </head>
 <body>
     {% include 'nav.html' %}
-    <h1>profile</h1>
-    {% include "errors.html" %}
-    <form method="post" action="" enctype="multipart/form-data">
-    <div class="form-group">
-        <label for="displayname">display name</label><br>
-        <input type="text" name="displayname"
-               placeholder="{{ display_name }}" class="form-control"
-               value="{{ request.form['email'] }}"></input>
-    </div>
+    <div class="profile-inbox">
+        <div class="profile">
+            <h1>profile</h1>
+            {% include "errors.html" %}
+            <form method="post" action="" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="displayname">display name</label><br>
+                <input type="text" name="displayname"
+                    placeholder="{{ display_name }}" class="form-control"
+                    value="{{ request.form['email'] }}"></input>
+            </div>
+            <div class="form-group">
+                <label for="contactmethod">preferred contact method</label><br>
+                <input type="text" name="contactmethod"
+                    placeholder="{{ contact_method }}" class="form-control"
+                    value="{{ request.form['contact_method'] }}"></input>
+            </div>
+            <div class="form-group">
+                <label for="description">description</label><br>
+                <textarea name="description" placeholder="{{ description }}"
+                        class="form-control">{{ request.form['description'] }}</textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">update profile</button>
+            </div>
+        </div>
+        </form>
 
-    <div class="form-group">
-        <label for="contactmethod">preferred contact method</label><br>
-        <input type="text" name="contactmethod"
-               placeholder="{{ contact_method }}" class="form-control"
-               value="{{ request.form['contact_method'] }}"></input>
+        {% if processing_items %}
+        <div class="inbox">
+            <h1 class="inbox-title">items to process:</h1>
+            <div class="inbox-content">
+                <ul>
+                {% for item in processing_items %}
+                <li><a href="{{url_for('item_page', id=item['id'])}}">{{ item["name"] }}:</a><span> {{item["note"]}}</span></li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-    <div class="form-group">
-        <label for="description">description</label><br>
-        <textarea name="description" placeholder="{{ description }}"
-                  class="form-control">{{ request.form['description'] }}</textarea>
-    </div>
-
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">update profile</button>
-    </div>
-
-    {% if processing_items %}
-    <h3>Items to process:</h3>
-    <ul>
-    {% for item in processing_items %}
-    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a><br><p>{{item["note"]}}</p></li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    </form>
     {% include 'footer.html' %}
 </body>
 </html>
