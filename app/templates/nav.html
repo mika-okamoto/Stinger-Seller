@@ -5,7 +5,8 @@
         <div class="top-bar"> 
             <li><a href="/">HOME</a></li>
             {% if "token" in request.cookies and request.cookies["token"] in g.users %}
-            <li><a href="/me">Profile</a></li>
+            <li><a href="{{url_for("go_to_dashboard")}}">Payment dashboard</a></li>
+            <li><a href="{{url_for("check_me")}}">Profile</a></li>
             {% endif %}
             <li><a href="/login" >{{ "Logout" if "token" in request.cookies and request.cookies["token"] in g.users else "login/register" }}</a></li>
         </div>
