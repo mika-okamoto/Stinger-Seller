@@ -6,9 +6,15 @@ import shutil
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
+import spacy
+from spacy import displacy
+import en_core_web_sm
 
 def create_app(test_config=None):
     users = {}
+
+    # activate spacy 
+    nlp = spacy.load("en_core_web_sm")
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)

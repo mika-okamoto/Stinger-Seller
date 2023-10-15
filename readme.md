@@ -10,6 +10,7 @@ On MacOS/Linux:
 python -m venv venv/
 . venv/bin/activate
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 ```
 
 On Windows:
@@ -17,6 +18,7 @@ On Windows:
 python -m venv venv/
 ./venv/Scripts/activate
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 ```
 
 ## How do I run this?
