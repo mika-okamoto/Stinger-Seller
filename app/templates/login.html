@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/forms.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>login</title>
 </head>
 <body>
     {% include 'nav.html' %}
-    <h1>Login</h1>
+    <h1>login</h1>
     {% include "errors.html" %}
     <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="email">Email</label><br>
+        <label for="email">email</label><br>
         <input type="text" name="email"
-               placeholder="Email" class="form-control"
+               placeholder="email" class="form-control"
                value="{{ request.form['email'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="password">Password</label><br>
+        <label for="password">password</label><br>
         <input type="password" name="password"
                placeholder="Password" class="form-control"
                value="{{ request.form['password'] }}"></input>
@@ -26,21 +30,21 @@
 
     {% if signup %}
     <div class="form-group">
-        <label for="displayname">Display name</label><br>
+        <label for="displayname">display name</label><br>
         <input type="text" name="displayname"
                placeholder="Display name" class="form-control"
                value="{{ request.form['displayname'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="description">Description</label><br>
-        <textarea name="description" placeholder="Seller Description"
+        <label for="description">description</label><br>
+        <textarea name="description" placeholder="seller description"
                   class="form-control">{{ request.form['description'] }}</textarea>
     </div>
     {% endif %}
 
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">{{ "Sign up" if signup else "Log in" }}</button>
+        <button type="submit" class="btn btn-primary">{{ "sign up" if signup else "log in" }}</button>
     </div>
     {% include 'footer.html' %}
 </form>

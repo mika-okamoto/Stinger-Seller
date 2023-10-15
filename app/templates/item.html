@@ -4,22 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>Item page - Stinger Seller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>item page - stinger eeller</title>
 </head>
 <body>
     {% include 'nav.html' %}
-    <h1>Item Information</h1>
-    <p>ID: {{id}}</p>
-    <p>Name: {{item["name"]}}</p>
-    <p><a href="{{url_for('seller_page', id=item['seller_id'])}}">Seller: {{item["seller"]}}</a></p>
-    <p>Price: ${{item["price"]}}</p>
-    <p>Description: {{item["description"]}}</p>
-    <p>Created: {{item["created"]}}</p>
+    <h1>item information</h1>
+    <p>id: {{id}}</p>
+    <p>name: {{item["name"]}}</p>
+    <p><a href="{{url_for('seller_page', id=item['seller_id'])}}">seller: {{item["seller"]}}</a></p>
+    <p>price: ${{item["price"]}}</p>
+    <p>description: {{item["description"]}}</p>
+    <p>created: {{item["created"]}}</p>
     <img src="{{item["image"]}}">
 
     {% if current_user and current_user == item["seller_id"] %}
     <form method="POST">
-        <button type="submit" class="btn btn-primary">Delete item</button>
+        <button type="submit" class="btn btn-primary">delete item</button>
     </form>
     {% endif %}
     {% include 'footer.html' %}

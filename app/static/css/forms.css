@@ -1,0 +1,80 @@
+h1 {
+    position: relative;
+    top: -50px;
+    width: 20vw;
+    height: 6vh;
+    background-color: var(--main-color);
+    margin: 20px auto;
+    padding-top: 8px;
+    border: 2px solid var(--main-focus);
+    box-shadow: 4px 4px var(--main-focus);
+    border-radius: 3px;
+}
+
+form {
+    position: relative;
+    top: -40px;
+    width: 30vw;
+    height: 60vh;
+    background-color: var(--main-color);
+    margin: 20px auto;
+    padding-top: 20px;
+    border: 2px solid var(--main-focus);
+    box-shadow: 4px 4px var(--main-focus);
+    border-radius: 3px;
+    font-size: var(--body-text);
+}
+
+.form-group, .image-form-group {
+    padding: 8px;
+    font-size: var(--body-text);
+}
+
+input, textarea {
+    width: 60%;
+    margin-top: 10px;
+    outline: none;
+    background-color: var(--bg-color);
+    border: none;
+}
+
+input {
+    height: 25px;
+}
+
+textarea {
+    height: 80px;
+    resize: none;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+}
+
+.checkbox-text, .checkbox-input, .tag-option {
+    width: 50px;
+}
+
+.image-form-group {
+    /* padding-left: 50px; */
+    display: flex;
+    flex-direction: row;
+    padding-left: 60px;
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    margin: auto;
+}
+
+#image {
+    font-family: 'Nanum Pen Script', cursive;
+    background-color: transparent;
+}
+
+::file-selector-button {
+    font-family: 'Nanum Pen Script', cursive;
+    border: 2px solid var(--main-focus);
+    box-shadow: 2px 2px var(--main-focus);
+    border-radius: 3px;
+}

@@ -4,39 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>Add Item</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/forms.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>add item</title>
 </head>
 <body>
 
     {% include 'nav.html' %}
 
-   <h1>Add Your Item</h1>
+   <h1>add your item</h1>
    {% include "errors.html" %}
    <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="name">Name</label><br>
+        <label for="name">name</label><br>
         <input type="text" name="name"
-               placeholder="Item Name" class="form-control"
+               placeholder="item name" class="form-control"
                value="{{ request.form['name'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="price">Price</label><br>
+        <label for="price">price</label><br>
         <input type="number" name="price" min="0" 
                max="100000" step="0.01"
-               placeholder="Item Price" class="form-control"
+               placeholder="item price" class="form-control"
                value="{{ request.form['price'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="description">Description</label><br>
-        <textarea name="description" placeholder="Item Description"
+        <label for="description">description</label><br>
+        <textarea name="description" placeholder="item description"
                   class="form-control">{{ request.form['description'] }}</textarea>
     </div>
 
     <div class="form-group tag-group">
         
-        <label for="description">Tags</label><br>
+        <label for="description">tags</label><br>
         
         {% for tag in tags %}
         <label class="tag-option">
@@ -46,16 +50,15 @@
         {% endfor %}
     </div>
 
-    <div class="form-group">
-        <label for="image">Upload Image:</label>
+    <div class="image-form-group">
+        <label for="image">upload image:</label>
         <input type="file" name="image" id="image" accept="image/*">
     </div>
 
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">submit</button>
     </div>
-
-    {% include 'footer.html' %}
 </form>
+{% include 'footer.html' %}
 </body>
 </html>

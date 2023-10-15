@@ -1,22 +1,30 @@
 :root {
-  --title-text: 15px;
-  --body-text: 13px;
-  --small-text: 11px;
+  --site-title-text: 35px;
+  --title-text: 23px;
+  --body-text: 20px;
+  --small-text: 18px;
   --font-color: #323232;
   --font-color-sub: #666;
-  --bg-color: #fffbea;
-  --main-color: #fff3a5;
+  --bg-color: #fff9da;
+  --main-color: #fad460;
   --main-focus: #a9530d;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Nanum Pen Script', cursive;
 }
 
 body {
   background-color: var(--bg-color);
+  overflow: hidden;
 }
 
 * {
   margin: auto;
   text-align: center;
+}
+
+::placeholder {
+  color: var(--main-focus);
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: var(--small-text);
 }
 
 nav ul {
@@ -30,72 +38,69 @@ li {
   float: left;
 }
 
-/* Add a black background color to the top navigation */
 .top-bar {
   display: flex;
   flex-direction: row;
+  max-height: 10vh;
   overflow: hidden;
   float: right;
-  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
-  margin-right: 2%;
+  padding: 8px;
 }
 
-/* Style the links inside the navigation bar */
 .top-bar a {
   float: left;
-  color: #312f2f;
+  color: var(--main-focus);
   text-align: center;
-  padding: 8px 16px;
+  padding: 4px 12px;
+  margin: 2px 5px 0 5px;
   text-decoration: none;
-  font-size: 17px;
+  font-size: var(--title-text);
+  border: 2px solid var(--bg-color);
+  border-radius: 3px;
+  box-shadow: 4px 4px var(--bg-color);
 }
 
 /* Change the color of links on hover */
 .top-bar a:hover {
-  background-color: #ddd;
-  color: black;
-}
-
-/* Add a color to the active/current link */
-.top-bar a.active {
-  background-color: #15d80f;
-  color: white;
+  background-color: var(--main-color);
+  color: var(--main-focus);
+  border: 2px solid var(--main-focus);
+  border-radius: 3px;
+  box-shadow: 4px 4px var(--main-focus);
 }
 
 .logo-top {
-  width: 5%; 
-  max-height: 5%; 
+  width: 15%; 
   float: left; 
-  margin-left: 5%; 
+  margin: 15px; 
 }
 
 .logo-bottom {
   width: 5%; 
-  height: 5%; 
-  margin-bottom: 0%;
+  height: 5%;
 }
 
 .bottom-bar {
+  width: 100%;
+  position: absolute;
+  bottom: 30px;
+  justify-self: center;
   overflow: hidden;
-  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
-  margin: 2.2% 0px;
 }
 
 /* Style the links inside the navigation bar */
 .bottom-bar a {
-  color: #312f2f;
+  color: var(--main-focus);
   text-align: center;
-  padding: 14px 16px;
+  padding: 5px 16px;
   text-decoration: none;
-  font-size: 17px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: var(--small-text);
+  margin: auto;
 }
 
 /* Change the color of links on hover */
 .bottom-bar a:hover {
-  background-color: #ddd;
-  color: black;
+  color: var(--main-focus);
 }
 
 /* Add a color to the active/current link */
@@ -112,14 +117,14 @@ li {
 }
 
 .add button {
-  background-color: #e6d924;
+  background-color: var(--main-color);
   border: none;
   color: white;
   padding: 20px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
+  font-size: var(--body-text);
   margin: 4px 2px;
   border-radius: 50%;
 }
@@ -130,9 +135,8 @@ li {
 }
 
 .add span {
-  font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif;
-  font-size: 100%;
-  height: 100%;
+  font-size: var(--body-text);
+  height: 80%;
   position: absolute;
   width: 10%;
   right: 46%; 
@@ -173,7 +177,7 @@ li {
   color: #555;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0.75px 0.75px black;
+  box-shadow: 0.75px 0.75px var(--main-focus);
 }
 
 .checkbox-input:checked ~ .checkbox-text {

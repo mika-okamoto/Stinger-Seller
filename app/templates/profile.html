@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
-    <title>Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    <title>profile</title>
 </head>
 <body>
     {% include 'nav.html' %}
-    <h1>Profile</h1>
+    <h1>profile</h1>
     {% include "errors.html" %}
     <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="displayname">Display name</label><br>
+        <label for="displayname">display name</label><br>
         <input type="text" name="displayname"
                placeholder="{{ display_name }}" class="form-control"
                value="{{ request.form['email'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="description">Description</label><br>
+        <label for="description">description</label><br>
         <textarea name="description" placeholder="{{ description }}"
                   class="form-control">{{ request.form['description'] }}</textarea>
     </div>
 
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Update profile</button>
+        <button type="submit" class="btn btn-primary">update profile</button>
     </div>
 
     {% if processing_items %}
