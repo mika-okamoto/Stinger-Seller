@@ -1,6 +1,6 @@
 ## Stinger Seller
 
-Educational (?) project.
+Educational project for Hack GT X
 
 ## How do I develop this?
 
