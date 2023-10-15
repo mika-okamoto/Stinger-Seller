@@ -4,19 +4,31 @@ import secrets
 import collections
 import shutil
 import json
+import re
 
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g, jsonify
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, make_response, flash, g
 
-# import spacy
-# from spacy import displacy
-# import en_core_web_sm
+import spacy
+from spacy import displacy
+import en_core_web_sm
+
+import gensim 
+from gensim import corpora 
+from gensim.similarities import MatrixSimilarity
+
+import operator 
+import string 
+
+# activate spacy 
+nlp = spacy.load("en_core_web_sm")
+
+# define puncuations and stop words for data processing 
+punctuations = string.punctuation
+stop_words = spacy.lang.en.stop_words.STOP_WORDS
 
 def create_app(test_config=None):
     users = {}
     payments = {}
-
-    # activate spacy 
-    # nlp = spacy.load("en_core_web_sm")
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -47,7 +59,7 @@ def create_app(test_config=None):
         stripe.api_key = app.config["STRIPE_SECRET_KEY"]
 
     @app.route('/', methods=["GET", "POST"])
-    def index():
+    def index(): 
         g.users = users
         database = db.get_db()
         if request.method == "POST": 
@@ -55,22 +67,81 @@ def create_app(test_config=None):
             items = []
             seen_items = set()
             if keywords != "":
-                for i in keywords.split():
-                    search_results = database.execute("""
+
+                data = database.execute("SELECT item.id, item.description, item.name FROM item").fetchall()
+
+
+                descriptions = [d[1] for d in data]
+                titles = [d[2] for d in data]
+
+                tokens = [ [] for i in range(len(descriptions)) ]
+
+                # process data and create tokens 
+                for i in range(len(descriptions)): 
+                    for des_sent in descriptions[i].split("."):         
+                        tokens[i].extend(tokenize_sentence(des_sent))
+                        tokens[i].extend(tokenize_sentence(titles[i]))
+                
+                dictionary = corpora.Dictionary(tokens)
+
+                corpus = [dictionary.doc2bow(desc) for desc in tokens]
+                word_frequencies = [[(dictionary[id], frequency) for id, frequency in line] for line in corpus[0:3]]
+
+                des_tfidf_model = gensim.models.TfidfModel(corpus, id2word=dictionary)
+                des_lsi_model = gensim.models.LsiModel(des_tfidf_model[corpus], id2word=dictionary, num_topics=50)
+
+                gensim.corpora.MmCorpus.serialize('des_tfidf_model_mm', des_tfidf_model[corpus])
+                gensim.corpora.MmCorpus.serialize('des_lsi_model_mm',des_lsi_model[des_tfidf_model[corpus]])
+
+                des_tfidf_corpus = gensim.corpora.MmCorpus('des_tfidf_model_mm')
+                des_lsi_corpus = gensim.corpora.MmCorpus('des_lsi_model_mm')
+
+                des_index = MatrixSimilarity(des_lsi_corpus, num_features = des_lsi_corpus.num_terms)
+
+                query_bow = dictionary.doc2bow(tokenize_sentence(keywords))
+
+                if query_bow and len(keywords.split()) > 1: 
+                    print("advanced search happening")
+                    query_tfidf = des_tfidf_model[query_bow]
+                    query_lsi = des_lsi_model[query_tfidf]
+
+                    des_index.num_best = len(des_index)
+
+                    des_list = des_index[query_lsi]
+                    refined_des_list = [] 
+
+                    for i in range(len(des_list)): 
+                        if des_list[i][1] > pow(10, -9):
+                            refined_des_list.append(des_list[i])
+
+                    refined_des_list.sort(key=operator.itemgetter(1), reverse=True)
+
+                    ids = [ des[0]+1 for des in refined_des_list]
+
+                    search_results = [] 
+
+                    for i in range(len(ids)): 
+                        search_results.append(database.execute("""
                         SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-                        FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ? AND processing = FALSE
-                        """, ("%" + i + "%",)).fetchall()
+                        FROM item JOIN user ON user.id=item.seller_id 
+                        WHERE item.id=?""", (int(ids[i]),)).fetchone())
+                else: 
+                    for i in keywords.split():
+                        search_results = database.execute("""
+                            SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                            FROM item JOIN user ON user.id=item.seller_id WHERE name LIKE ?
+                            """, ("%" + i + "%",)).fetchall()
                     
-                    items.extend([i for i in search_results if i[0] not in seen_items])
-                    seen_items |= {i[0] for i in search_results}
+                items.extend([i for i in search_results if i[0] not in seen_items])
+                seen_items |= {i[0] for i in search_results}
             else:
+
                 items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
                 FROM item JOIN user ON user.id=item.seller_id WHERE processing = FALSE
                 """).fetchall() 
 
             taglist = request.form.getlist('tag-group')
-            print(len(taglist))
             if len(taglist) != 0:
                 tagged_items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
@@ -124,6 +195,29 @@ def create_app(test_config=None):
         ]
 
         return render_template("index.html", items=items, tags=tags)
+
+    def tokenize_sentence(sentence):
+        sentence = re.sub('\'','',sentence)
+
+        sentence = re.sub('\w*\d\w*','',sentence)
+
+        sentence = re.sub(' +',' ',sentence)
+
+        sentence = re.sub(r'\n: \'\'.*','',sentence)
+        sentence = re.sub(r'\n!.*','',sentence)
+        sentence = re.sub(r'^:\'\'.*','',sentence)
+        
+        sentence = re.sub(r'\n',' ',sentence)
+        
+        sentence = re.sub(r'[^\w\s]',' ',sentence)
+        
+        sent_tokens = nlp(sentence)
+        
+        sent_tokens = [word.lemma_.lower().strip() if word.lemma_ != "-PRON-" else word.lower_ for word in sent_tokens]
+        
+        sent_tokens = [word for word in sent_tokens if word not in stop_words and word not in punctuations and len(word) > 2]
+
+        return sent_tokens
 
     @app.route("/items/<id>", methods=("GET", "POST"))
     def item_page(id):
@@ -194,7 +288,6 @@ def create_app(test_config=None):
                 """, (id,)).fetchall() 
 
             taglist = request.form.getlist('tag-group')
-            print(len(taglist))
             if len(taglist) != 0:
                 tagged_items = database.execute("""
                 SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
