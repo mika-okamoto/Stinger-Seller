@@ -155,14 +155,17 @@
   
   .card-btn:hover {
     border: 2px solid var(--main-focus);
+    transition-duration: 200ms;
   }
   
   .card-btn:hover span {
     fill: var(--main-focus);
+    transition-duration: 200ms;
   }
     
   .card-img:hover {
     transform: scale(1.2);
+    transition-duration: 200ms;
   }
   
   /* .card-btn:active {
