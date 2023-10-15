@@ -1,7 +1,7 @@
 <nav>
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
     <ul> 
-        <li><img class="logo-top" id = "logo" src="{{ url_for('static', filename= 'images/logo.png') }}" alt="Logo"/></li>
+        <a href="{{url_for("index")}}"><li><img class="logo-top" id = "logo" src="{{ url_for('static', filename= 'images/logo.png') }}" alt="Logo"/></li></a>
         <div class="top-bar"> 
             <li><a href="/">home</a></li>
             {% if "token" in request.cookies and request.cookies["token"] in g.users %}

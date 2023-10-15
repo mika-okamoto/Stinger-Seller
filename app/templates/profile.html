@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename= 'css/forms.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
@@ -38,14 +39,14 @@
     </div>
 
     {% if processing_items %}
-    <h3>Processing items:</h3>
-    <lu>
+    <h3>Items to process:</h3>
+    <ul>
     {% for item in processing_items %}
-    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a><br><pre>{{item["note"]}}</pre></li>
+    <li><a href="{{url_for("item_page", id=item["id"])}}">{{ item["name"] }}</a><br><p>{{item["note"]}}</p></li>
     {% endfor %}
-    </lu>
+    </ul>
     {% endif %}
+    </form>
     {% include 'footer.html' %}
-</form>
 </body>
 </html>
