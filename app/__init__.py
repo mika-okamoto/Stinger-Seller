@@ -18,6 +18,7 @@ def create_app(test_config=None):
         # allow up to 16MB uploads
         MAX_CONTENT_LENGTH=16 * 1000 * 1000,
         UPLOAD_FOLDER=os.path.join(app.instance_path, "images"),
+        STRIPE=False,
     )
 
     # make sure the folder to upload images to exists
@@ -33,12 +34,10 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(os.path.join(app.instance_path, "images"))
-    except OSError:
-        pass
-    
+    if app.config["STRIPE"]:
+        import stripe
+        stripe.api_key = app.config["STRIPE_SECRET_KEY"]
+
     @app.route('/', methods=["GET", "POST"])
     def index():
         g.users = users
@@ -250,6 +249,28 @@ def create_app(test_config=None):
 
         return render_template("seller.html", id=id, items=items, seller=seller, tags = tags)
 
+    @app.route("/checkout/<id>", methods=("POST",))
+    def checkout(id):
+        g.users = users
+        if not app.config["STRIPE"]:
+            return "stripe is not enabled"
+
+        database = db.get_db()
+        price_id, account_id = database.execute("SELECT item.stripe_price_id, user.stripe_id FROM item JOIN user ON user.id=item.seller_id WHERE item.id = ?", (id,)).fetchone()
+        to = stripe.checkout.Session.create(
+            mode="payment",
+            line_items=[{"price": price_id, "quantity": 1}],
+            payment_intent_data={
+                #"application_fee_amount": 123,
+                "transfer_data": {"destination": account_id},
+            },
+            # TODO: success path which removes the item upon purchase + adds it to profile
+            success_url=url_for("index", _external=True),
+            cancel_url=url_for("index", _external=True),
+        ).url
+
+        return redirect(to)
+
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():
         g.users = users
@@ -288,9 +309,21 @@ def create_app(test_config=None):
                     shutil.copy("app/static/images/logo.png", os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
                 else:
                     request.files["image"].save(os.path.join(app.config['UPLOAD_FOLDER'], image_filename))
+                if app.config["STRIPE"]:
+                    product = stripe.Product.create(
+                        name=request.form["name"]
+                    )
+                    price = stripe.Price.create(
+                        unit_amount=int(round(float(request.form["price"]), 2) * 100),
+                        currency="usd",
+                        product=product.id,
+                    ).id
+                else:
+                    price = None
+
                 id_row = database.execute(
-                    "INSERT INTO item (name, seller_id, price, description, image_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
-                    (request.form["name"], users[request.cookies["token"]], round(float(request.form["price"]), 2), request.form["description"], image_filename)
+                    "INSERT INTO item (name, seller_id, price, description, image_path, stripe_price_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
+                    (request.form["name"], users[request.cookies["token"]], round(float(request.form["price"]), 2), request.form["description"], image_filename, price)
                 ).fetchone()
                 database.executemany(
                     "INSERT INTO itemtags (item_id, tag_id) VALUES (?, ?)",
@@ -330,11 +363,25 @@ def create_app(test_config=None):
                     flash("incorrect password")
                     return render_template("login.html")
             elif display_name and description:
+                if app.config["STRIPE"]:
+                    account = stripe.Account.create(type="express").id
+                else:
+                    account = None
                 database.execute(
-                    "INSERT INTO user (email, password, display_name, description) VALUES (?, ?, ?, ?)",
-                    (email, password, display_name, description)
+                    "INSERT INTO user (email, password, display_name, description, stripe_id) VALUES (?, ?, ?, ?, ?)",
+                    (email, password, display_name, description, account)
                 )
                 database.commit()
+
+                if app.config["STRIPE"]:
+                    url = stripe.AccountLink.create(
+                        account=account,
+                        # I don't think this will be relevant for the demo...
+                        refresh_url=url_for("login", _external=True),
+                        return_url=url_for("index", _external=True),
+                        type="account_onboarding"
+                    ).url
+                    return redirect(url)
             else:
                 if display_name == "":
                     flash("missing display name")
@@ -383,6 +430,18 @@ def create_app(test_config=None):
             return render_template("profile.html", display_name=display_name, description=description)
         else:
             return redirect(url_for("login"))
+    
+    @app.route("/dashboard")
+    def go_to_dashboard():
+        g.users = users
+
+        if "token" in request.cookies and request.cookies["token"] in users and app.config["STRIPE"]:
+            database = db.get_db()
+            account_id = database.execute("SELECT stripe_id FROM user WHERE id = ?", (users[request.cookies["token"]],)).fetchone()[0]
+            login = stripe.Account.create_login_link(account_id).url
+            return redirect(login)
+
+        return redirect(url_for("index"))
 
     from . import db
     db.init_app(app)
