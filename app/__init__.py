@@ -429,7 +429,7 @@ def create_app(test_config=None):
             if request.method == "POST":
                 new_display_name = request.form["displayname"]
                 new_description = request.form["description"]
-                new_contact_method = request.form["contact_method"]
+                new_contact_method = request.form["contactmethod"]
 
                 if not (new_display_name or new_description or new_contact_method):
                     flash("either update display name, description, contact method, or all three")
