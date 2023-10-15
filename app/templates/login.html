@@ -11,7 +11,7 @@
 </head>
 <body>
     {% include 'nav.html' %}
-    <h1>login</h1>
+    <h1>{{ "sign up" if signup else "log in" }}</h1>
     {% include "errors.html" %}
     <form method="post" action="" enctype="multipart/form-data">
     <div class="form-group">
@@ -24,7 +24,7 @@
     <div class="form-group">
         <label for="password">password</label><br>
         <input type="password" name="password"
-               placeholder="Password" class="form-control"
+               placeholder="password" class="form-control"
                value="{{ request.form['password'] }}"></input>
     </div>
 
@@ -53,7 +53,8 @@
     <div class="form-group">
         <button type="submit" class="btn btn-primary">{{ "sign up" if signup else "log in" }}</button>
     </div>
-    {% include 'footer.html' %}
+    
 </form>
+{% include 'footer.html' %}
 </body>
 </html>

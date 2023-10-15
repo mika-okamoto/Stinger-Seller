@@ -60,13 +60,13 @@ li {
   box-shadow: 4px 4px var(--bg-color);
 }
 
-/* Change the color of links on hover */
 .top-bar a:hover {
   background-color: var(--main-color);
   color: var(--main-focus);
   border: 2px solid var(--main-focus);
   border-radius: 3px;
   box-shadow: 4px 4px var(--main-focus);
+  transition-duration: 200ms;
 }
 
 .logo-top {
@@ -90,7 +90,7 @@ li {
 
 /* Style the links inside the navigation bar */
 .bottom-bar a {
-  color: var(--main-focus);
+  color: black;
   text-align: center;
   padding: 5px 16px;
   text-decoration: none;
@@ -98,12 +98,11 @@ li {
   margin: auto;
 }
 
-/* Change the color of links on hover */
 .bottom-bar a:hover {
   color: var(--main-focus);
+  transition-duration: 200ms;
 }
 
-/* Add a color to the active/current link */
 .bottom-bar a.active {
   color: white;
 }
@@ -146,6 +145,11 @@ li {
   color: rgb(0, 0, 0); 
 }
 
+.add:hover {
+  scale: 1.1;
+  transition-duration: 200ms;
+}
+
 .char1 { transform: rotate(-48deg); }
 .char2 { transform: rotate(-40deg); }
 .char3 { transform: rotate(-32deg); }
@@ -182,5 +186,6 @@ li {
 
 .checkbox-input:checked ~ .checkbox-text {
   font-weight: bold;
+  text-decoration: underline;
 }
 

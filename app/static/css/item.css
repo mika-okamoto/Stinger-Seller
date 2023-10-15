@@ -1,0 +1,33 @@
+h1 {
+    position: relative;
+    top: -50px;
+    width: 20vw;
+    height: 6vh;
+    background-color: var(--main-color);
+    margin: 20px auto;
+    padding-top: 8px;
+    border: 2px solid var(--main-focus);
+    box-shadow: 4px 4px var(--main-focus);
+    border-radius: 3px;
+}
+
+.item-group {
+    position: relative;
+    top: -40px;
+    width: 30vw;
+    height: 60vh;
+    background-color: var(--main-color);
+    margin: 20px auto;
+    padding: 30px;
+    border: 2px solid var(--main-focus);
+    box-shadow: 4px 4px var(--main-focus);
+    border-radius: 3px;
+    font-size: var(--body-text);
+    overflow: hidden;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+#item-img {
+    height: 20%;
+}
