@@ -11,6 +11,7 @@ CREATE TABLE item (
     price FLOAT NOT NULL,
     description TEXT NOT NULL,
     image_path TEXT NOT NULL,
+    stripe_price_id TEXT,
 
     FOREIGN KEY(seller_id) REFERENCES user(id)
 );
@@ -20,6 +21,7 @@ CREATE TABLE user (
     display_name TEXT NOT NULL,
     email TEXT NOT NULL,
     description TEXT NOT NULL,
+    stripe_id TEXT,
     -- 😬
     password TEXT NOT NULL
 );

@@ -6,10 +6,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/index.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <title>stinger seller</title>
@@ -45,9 +41,9 @@
             <div class="card-footer">
                 <div class="card-redirect"><a href="{{ url_for('item_page', id=item['id']) }}">see more...</a></div>
                 <div class="card-price">${{ "{:.2f}".format(item["price"]) }}</div>
-                <a href="{{ url_for('item_page', id=item['id']) }}"><button class="card-btn">
+                <form action="{{ url_for('checkout', id=item['id']) }}" method="POST"><button type="submit" class="card-btn">
                     <span class="material-symbols-outlined">shopping_cart</span>
-                </button></a>
+                </button></form>
             </div>
             <div class="card-tags">
                 {% for tag in item["tags"] %}
