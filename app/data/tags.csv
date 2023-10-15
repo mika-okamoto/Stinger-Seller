@@ -1,9 +1,6 @@
-textbook,black,white
-electronics,red,yellow
-stationary,black,white
-dorm,black,white
-transportation,black,white
-art-crafts,black,white
-clothes,black,white
-free,black,white
-paid,black,white
+textbook,#A7C7E7,black
+electronics,#7EC4CF,black
+stationary,#D1CFE2,black
+dorm,#D4AFB9,black
+free,#92BF8F,black
+paid,#569153,black
