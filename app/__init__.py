@@ -248,11 +248,12 @@ def create_app(test_config=None):
         ]
 
         seller_info = database.execute("""
-        SELECT display_name, description FROM user WHERE user.id = ?""", (id,)).fetchone()
+        SELECT display_name, description, contact_method FROM user WHERE user.id = ?""", (id,)).fetchone()
 
         seller = {
             "name": seller_info[0],
-            "description": seller_info[1]
+            "description": seller_info[1],
+            "contact_method": seller_info[2]
         }
 
         return render_template("seller.html", id=id, items=items, seller=seller, tags = tags)
@@ -361,6 +362,7 @@ def create_app(test_config=None):
             password = request.form["password"]
             display_name = request.form.get("displayname")
             description = request.form.get("description")
+            contact_method = request.form.get("contactmethod")
 
             if not email or not password:
                 return redirect(request.url)
@@ -372,14 +374,14 @@ def create_app(test_config=None):
                 if records == 0:
                     flash("incorrect password")
                     return render_template("login.html")
-            elif display_name and description:
+            elif display_name and description and contact_method:
                 if app.config["STRIPE"]:
                     account = stripe.Account.create(type="express").id
                 else:
                     account = None
                 database.execute(
-                    "INSERT INTO user (email, password, display_name, description, stripe_id) VALUES (?, ?, ?, ?, ?)",
-                    (email, password, display_name, description, account)
+                    "INSERT INTO user (email, password, display_name, description, contact_method, stripe_id) VALUES (?, ?, ?, ?, ?, ?)",
+                    (email, password, display_name, description, contact_method, account)
                 )
                 database.commit()
 
@@ -397,6 +399,9 @@ def create_app(test_config=None):
                     flash("missing display name")
                 if description == "":
                     flash("missing description")
+                if contact_method == "":
+                    flash("missing contact method")
+                
                 return render_template("login.html", signup=True)
         
             id = database.execute("SELECT id FROM user WHERE email = ? AND password = ?", (email, password)).fetchone()[0]
@@ -418,9 +423,10 @@ def create_app(test_config=None):
             if request.method == "POST":
                 new_display_name = request.form["displayname"]
                 new_description = request.form["description"]
+                new_contact_method = request.form["contact_method"]
 
-                if not (new_display_name or new_description):
-                    flash("either update display name, description, or both")
+                if not (new_display_name or new_description or new_contact_method):
+                    flash("either update display name, description, contact method, or all three")
                 else:
                     if new_display_name:
                         database.execute(
@@ -432,15 +438,20 @@ def create_app(test_config=None):
                             "UPDATE user SET description = ? WHERE id = ?",
                             (new_description, users[token],)
                         )
+                    if new_contact_method:
+                        database.execute(
+                            "UPDATE user SET contact_method = ? WHERE id = ?",
+                            (new_contact_method, users[token],)
+                        )
                     database.commit()
 
                     return redirect(request.url)
 
-            display_name, description = database.execute("SELECT display_name, description FROM user WHERE id = ?", (users[token],)).fetchone()
+            display_name, description, contact_method = database.execute("SELECT display_name, description, contact_method FROM user WHERE id = ?", (users[token],)).fetchone()
             # this should really be things that are fully paid for, but don't have that kind of time during a demo.
             processing_items = database.execute("SELECT id, name FROM item WHERE seller_id = ? AND processing = TRUE", (users[token],)).fetchall()
             processing_items = [{"id": row[0], "name": row[1]} for row in processing_items]
-            return render_template("profile.html", display_name=display_name, description=description, processing_items=processing_items)
+            return render_template("profile.html", display_name=display_name, description=description, processing_items=processing_items, contact_method=contact_method)
         else:
             return redirect(url_for("login"))
     

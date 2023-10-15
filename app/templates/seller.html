@@ -11,6 +11,7 @@
 <body>
     {% include 'nav.html' %}
     <h1>{{ seller['name'] }}'s page</h1>
+    <h3>{{ seller['contact_method']}}</h3>
     <p>{{seller['description']}}</p>
 
     <form action="{{  url_for('seller_page', id=items[0]['seller_id']) }}" method="post">

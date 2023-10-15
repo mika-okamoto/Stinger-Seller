@@ -22,6 +22,7 @@ CREATE TABLE user (
     display_name TEXT NOT NULL,
     email TEXT NOT NULL,
     description TEXT NOT NULL,
+    contact_method TEXT NOT NULL,
     stripe_id TEXT,
     -- 😬
     password TEXT NOT NULL
