@@ -162,32 +162,93 @@ def create_app(test_config=None):
         }
         return render_template("item.html", id=id, item=item, current_user=users.get(request.cookies.get("token")))
 
-    @app.route("/sellers/<id>")
+    @app.route("/sellers/<id>", methods=("GET", "POST"))
     def seller_page(id):
         g.users = users
         database = db.get_db()
-        items = database.execute("""
-        SELECT item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
-        FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ?""", (id,)).fetchall()
+
+        if request.method == "POST": 
+            keywords = request.form.get("keywords")
+            items = []
+            seen_items = set()
+            if keywords != "":
+                for i in keywords.split():
+                    search_results = database.execute("""
+                        SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                        FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ? AND name LIKE ?
+                        """, (id, "%" + i + "%")).fetchall()
+                    
+                    items.extend([i for i in search_results if i[0] not in seen_items])
+                    seen_items |= {i[0] for i in search_results}
+            else:
+                items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ?
+                """, (id,)).fetchall() 
+
+            taglist = request.form.getlist('tag-group')
+            print(len(taglist))
+            if len(taglist) != 0:
+                tagged_items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id JOIN itemtags ON item.id = itemtags.item_id WHERE user.id = ?
+                AND """ + "OR ".join("itemtags.tag_id = ?" for _ in range(len(taglist))) +
+                "GROUP BY item.id HAVING COUNT(*) = ?", (id, *taglist, len(taglist))).fetchall()
+            else: 
+                tagged_items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ?
+                """, (id,)).fetchall() 
+            
+            tagged_items = {item[0] for item in tagged_items}
+
+            items = [item for item in items if item[0] in tagged_items]
+        else: 
+            items = database.execute("""
+                SELECT item.id, item.name, user.display_name, item.price, item.description, item.image_path, item.created, item.seller_id
+                FROM item JOIN user ON user.id=item.seller_id WHERE user.id = ?
+                """, (id,)).fetchall()
+
+        tags = database.execute("SELECT id, name, background_color, text_color FROM tag").fetchall()
+        item_tags_from_db = database.execute("SELECT item_id, tag_id FROM itemtags").fetchall()
+            
+        # make it easier to work with
+        tags = {
+            row[0]: {
+                "name": row[1],
+                "background_color": row[2],
+                "text_color": row[3],
+                "id": row[0]
+            }
+            for row in tags
+        }
+        item_tags = collections.defaultdict(list)
+        for item_tag_pair in item_tags_from_db:
+            item_tags[item_tag_pair[0]].append(tags[item_tag_pair[1]])
+        
+        items = [
+            {
+                "id": item[0],
+                "name": item[1],
+                "seller": item[2],
+                "seller_id": item[7],
+                "price": item[3],
+                "description": item[4],
+                "created": item[6],
+                "image": url_for("get_image", name=item[5]),
+                "tags": item_tags[item[0]]
+            } for item in items
+        ]
+
         seller_info = database.execute("""
         SELECT display_name, description FROM user WHERE user.id = ?""", (id,)).fetchone()
-
-        items = [{
-            "name": item[0],
-            "seller": item[1],
-            "seller_id": item[6],
-            "price": item[2],
-            "description": item[3],
-            "created": item[5],
-            "image": url_for("get_image", name=item[4])
-            } for item in items]
 
         seller = {
             "name": seller_info[0],
             "description": seller_info[1]
         }
 
-        return render_template("seller.html", id=id, items=items, seller=seller)
+        return render_template("seller.html", id=id, items=items, seller=seller, tags = tags)
 
     @app.route('/add-item', methods=("GET", "POST"))
     def add_item():

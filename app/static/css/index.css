@@ -143,6 +143,7 @@
   }
 
   .tag {
-    border-radius: 3px;
+    border-radius: 7px;
     font-size: var(--small-text);
+    padding: 3px;
   }
